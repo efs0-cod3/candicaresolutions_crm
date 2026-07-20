@@ -50,7 +50,7 @@ project. To point it at your own project, copy `.env.example` to `.env`:
 
 ```
 VITE_SUPABASE_URL=https://YOUR-PROJECT-ref.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_xxxxxxxxxxxxxxxxxxxxxx
+VITE_SUPABASE_ANON_K=sb_publishable_xxxxxxxxxxxxxxxxxxxxxx
 ```
 
 > The publishable/anon key is a **public** client-side credential — it is meant
@@ -69,7 +69,7 @@ Vercel only serves the front end.
    Vercel auto-detects Vite (build `vite build`, output `dist`).
 3. Under **Environment Variables**, add:
    - `VITE_SUPABASE_URL` → `https://gtuknjbftbmkenfwqlsp.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY` → `sb_publishable_BsiUH6rbCjVh3l37dCoQVw_nUaHTuBH`
+   - `VITE_SUPABASE_ANON_K` → `sb_publishable_BsiUH6rbCjVh3l37dCoQVw_nUaHTuBH`
 4. **Deploy.** Every future `git push` triggers a new deployment automatically.
 
 > After the first deploy, add the Vercel URL to Supabase → **Authentication →
