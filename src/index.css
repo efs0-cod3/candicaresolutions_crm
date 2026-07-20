@@ -368,6 +368,29 @@ select.chip {
   text-align: center;
   margin-bottom: 18px;
 }
+.call-phone {
+  display: block;
+  text-align: center;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--navy);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 18px;
+  transition: background 0.15s;
+}
+.call-phone:hover {
+  background: var(--navy-deep);
+}
+.call-phone--empty {
+  background: var(--bg);
+  color: var(--ink-soft);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+}
 .call-facts {
   background: var(--bg);
   border-radius: 12px;

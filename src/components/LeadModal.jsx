@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 
 const EMPTY = {
   name: '',
+  phone: '',
   previous_plan: '',
   new_plan: '',
   sep: '',
@@ -24,6 +25,7 @@ export default function LeadModal({ lead, onClose, onSaved }) {
       ? { ...EMPTY }
       : {
           name: lead.name || '',
+          phone: lead.phone || '',
           previous_plan: lead.previous_plan || '',
           new_plan: lead.new_plan || '',
           sep: lead.sep || '',
@@ -51,6 +53,7 @@ export default function LeadModal({ lead, onClose, onSaved }) {
 
     const payload = {
       name: form.name.trim(),
+      phone: form.phone.trim() || null,
       previous_plan: form.previous_plan.trim() || null,
       new_plan: form.new_plan.trim() || null,
       sep: form.sep.trim() || null,
@@ -101,6 +104,15 @@ export default function LeadModal({ lead, onClose, onSaved }) {
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
             autoFocus
+          />
+        </div>
+        <div className="field">
+          <label>Teléfono</label>
+          <input
+            type="tel"
+            value={form.phone}
+            onChange={(e) => set('phone', e.target.value)}
+            placeholder="(555) 123-4567"
           />
         </div>
         <div className="field">
