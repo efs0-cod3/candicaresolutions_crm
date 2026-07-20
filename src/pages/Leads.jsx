@@ -1,40 +1,42 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { supabase, OUTCOMES } from '../lib/supabase'
-import StatusBadge from '../components/StatusBadge'
-import { IconPhone } from '../components/Icons'
+import { useAuth } from '../context/AuthContext'
+import LeadModal from '../components/LeadModal'
 
 function money(v) {
   if (v === null || v === undefined || v === '') return '—'
-  return `$${Number(v).toLocaleString(undefined, { minimumFractionDigits: 0 })}`
+  return '$' + Number(v).toFixed(2)
+}
+function fmtDate(d) {
+  if (!d) return '—'
+  const [y, m, day] = d.split('-')
+  if (!day) return d
+  return `${m}/${day}/${y}`
 }
 
 export default function Leads() {
+  const { user, isAdmin } = useAuth()
   const [leads, setLeads] = useState([])
-  const [profiles, setProfiles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // filters
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [agentFilter, setAgentFilter] = useState('all')
+  const [sepFilter, setSepFilter] = useState('all')
+
+  const [modalLead, setModalLead] = useState(undefined) // undefined=closed, null=new, obj=edit
 
   async function load() {
     setLoading(true)
     setError('')
-    const [leadsRes, profilesRes] = await Promise.all([
-      supabase
-        .from('leads')
-        .select(
-          'id, name, previous_plan, new_plan, sep, enroll_date, enroll_status, amount, hra, call_status, notes, assigned_to, updated_at'
-        )
-        .order('updated_at', { ascending: false }),
-      supabase.from('profiles').select('id, full_name, role'),
-    ])
-    if (leadsRes.error) setError(leadsRes.error.message)
-    setLeads(leadsRes.data || [])
-    setProfiles(profilesRes.data || [])
+    const { data, error } = await supabase
+      .from('leads')
+      .select(
+        'id, name, previous_plan, new_plan, sep, enroll_date, enroll_status, amount, hra, call_status, notes, updated_at'
+      )
+      .order('enroll_date', { ascending: true })
+    if (error) setError(error.message)
+    setLeads(data || [])
     setLoading(false)
   }
 
@@ -42,142 +44,190 @@ export default function Leads() {
     load()
   }, [])
 
-  const profileMap = useMemo(() => {
-    const m = {}
-    profiles.forEach((p) => (m[p.id] = p))
-    return m
-  }, [profiles])
+  const stats = useMemo(() => {
+    const total = leads.length
+    const called = leads.filter((l) => l.call_status !== 'pending').length
+    const interested = leads.filter((l) => l.call_status === 'interested').length
+    const rate = called > 0 ? Math.round((interested / called) * 100) : 0
+    return { total, called, interested, rate }
+  }, [leads])
+
+  const seps = useMemo(
+    () => [...new Set(leads.map((l) => l.sep).filter(Boolean))],
+    [leads]
+  )
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return leads.filter((l) => {
       if (statusFilter !== 'all' && l.call_status !== statusFilter) return false
-      if (agentFilter !== 'all') {
-        if (agentFilter === 'unassigned' && l.assigned_to) return false
-        if (agentFilter !== 'unassigned' && l.assigned_to !== agentFilter)
-          return false
-      }
+      if (sepFilter !== 'all' && l.sep !== sepFilter) return false
       if (q && !(l.name || '').toLowerCase().includes(q)) return false
       return true
     })
-  }, [leads, search, statusFilter, agentFilter])
+  }, [leads, search, statusFilter, sepFilter])
 
-  const statusCounts = useMemo(() => {
-    const c = {}
-    leads.forEach((l) => {
-      c[l.call_status] = (c[l.call_status] || 0) + 1
-    })
-    return c
-  }, [leads])
+  async function setStatus(id, status) {
+    // optimistic update
+    setLeads((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, call_status: status } : l))
+    )
+    const { error } = await supabase
+      .from('leads')
+      .update({ call_status: status, updated_by: user.id, updated_at: new Date().toISOString() })
+      .eq('id', id)
+    if (error) {
+      setError(error.message)
+      load()
+    }
+  }
+
+  async function remove(id) {
+    if (!window.confirm('¿Eliminar este contacto?')) return
+    const { error } = await supabase.from('leads').delete().eq('id', id)
+    if (error) {
+      setError(
+        error.message.includes('policy')
+          ? 'Solo un administrador puede eliminar contactos.'
+          : error.message
+      )
+      return
+    }
+    setLeads((prev) => prev.filter((l) => l.id !== id))
+  }
 
   return (
     <>
-      <div className="page-head">
-        <div>
-          <h1 className="page-title">Leads</h1>
-          <p className="page-subtitle">
-            {leads.length} contacts · {statusCounts.pending || 0} still pending
-          </p>
+      <div className="stats">
+        <div className="stat">
+          <div className="num">{stats.total}</div>
+          <div className="lbl">Leads totales</div>
         </div>
-        <Link to="/call" className="btn btn-primary">
-          <IconPhone width={16} height={16} />
-          Start calling
-        </Link>
+        <div className="stat">
+          <div className="num">{stats.called}</div>
+          <div className="lbl">Contactados</div>
+        </div>
+        <div className="stat">
+          <div className="num">{stats.interested}</div>
+          <div className="lbl">Interesados</div>
+        </div>
+        <div className="stat">
+          <div className="num">{stats.rate}%</div>
+          <div className="lbl">Tasa de interés</div>
+        </div>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      <div className="content">
+        {error && <div className="alert alert-error">{error}</div>}
 
-      <div className="filters">
-        <div className="filter-field grow">
-          <label>Search</label>
+        <div className="filters">
           <input
             type="text"
-            placeholder="Search by name…"
+            placeholder="Buscar por nombre…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
-        <div className="filter-field">
-          <label>Call status</label>
           <select
+            className="chip"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="all">All statuses</option>
-            {Object.entries(OUTCOMES).map(([key, meta]) => (
-              <option key={key} value={key}>
-                {meta.label}
+            <option value="all">Todos los estados</option>
+            {Object.entries(OUTCOMES).map(([k, m]) => (
+              <option key={k} value={k}>
+                {m.label}
               </option>
             ))}
           </select>
-        </div>
-        <div className="filter-field">
-          <label>Assigned to</label>
           <select
-            value={agentFilter}
-            onChange={(e) => setAgentFilter(e.target.value)}
+            className="chip"
+            value={sepFilter}
+            onChange={(e) => setSepFilter(e.target.value)}
           >
-            <option value="all">Anyone</option>
-            <option value="unassigned">Unassigned</option>
-            {profiles.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.full_name}
+            <option value="all">Todos los SEP</option>
+            {seps.map((s) => (
+              <option key={s} value={s}>
+                {s}
               </option>
             ))}
           </select>
+          <button className="add-btn" onClick={() => setModalLead(null)}>
+            + Agregar contacto
+          </button>
         </div>
+
+        {loading ? (
+          <div className="spinner" />
+        ) : filtered.length === 0 ? (
+          <div className="empty">No hay leads que coincidan con el filtro.</div>
+        ) : (
+          <div className="lead-table">
+            {filtered.map((l) => {
+              const meta = OUTCOMES[l.call_status] || OUTCOMES.pending
+              return (
+                <div className="lead-row" key={l.id}>
+                  <div>
+                    <div className="lead-name">{l.name}</div>
+                    <div className="lead-sub">{fmtDate(l.enroll_date)}</div>
+                  </div>
+                  <div className="plan-move">
+                    {l.previous_plan || '—'} → <b>{l.new_plan || '—'}</b>
+                  </div>
+                  <div>
+                    <span className="badge sep">{l.sep || '—'}</span>
+                  </div>
+                  <div className="amt">
+                    {money(l.amount)}
+                    <div className="sub">HRA {money(l.hra)}</div>
+                  </div>
+                  <div>
+                    <select
+                      className="status-pill"
+                      value={l.call_status}
+                      onChange={(e) => setStatus(l.id, e.target.value)}
+                      style={{ background: meta.pillBg, color: meta.color }}
+                    >
+                      {Object.entries(OUTCOMES).map(([k, m]) => (
+                        <option key={k} value={k}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="row-actions">
+                    <button
+                      className="icon-btn"
+                      title="Editar / notas"
+                      onClick={() => setModalLead(l)}
+                    >
+                      ✎
+                    </button>
+                    {isAdmin && (
+                      <button
+                        className="icon-btn danger"
+                        title="Eliminar"
+                        onClick={() => remove(l.id)}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <div className="spinner" />
-      ) : filtered.length === 0 ? (
-        <div className="card card-pad empty">
-          <div className="empty-icon">🔍</div>
-          No leads match your filters.
-        </div>
-      ) : (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Plan change</th>
-                <th>SEP</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Assigned to</th>
-                <th>Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((l) => (
-                <tr key={l.id}>
-                  <td className="lead-name">{l.name}</td>
-                  <td className="muted">
-                    {l.previous_plan || '—'}
-                    {' → '}
-                    {l.new_plan || '—'}
-                  </td>
-                  <td className="muted">{l.sep || '—'}</td>
-                  <td>{money(l.amount)}</td>
-                  <td>
-                    <StatusBadge status={l.call_status} />
-                  </td>
-                  <td className="muted">
-                    {l.assigned_to
-                      ? profileMap[l.assigned_to]?.full_name || 'Unknown'
-                      : '—'}
-                  </td>
-                  <td className="muted">
-                    {l.updated_at
-                      ? new Date(l.updated_at).toLocaleDateString()
-                      : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {modalLead !== undefined && (
+        <LeadModal
+          lead={modalLead}
+          onClose={() => setModalLead(undefined)}
+          onSaved={() => {
+            setModalLead(undefined)
+            load()
+          }}
+        />
       )}
     </>
   )

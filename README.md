@@ -1,17 +1,20 @@
-# Candi Care CRM — Cold Calls
+# Central de Llamadas — CRM
 
-A lightweight CRM for working cold-call leads, built with **React + Vite** and
-backed by **Supabase** (Auth + Postgres with Row Level Security).
+A CRM for working cold-call enrollment leads, built with **React + Vite** and
+backed by **Supabase** (Auth + Postgres with Row Level Security). The UI is in
+Spanish, themed with the "Central de Llamadas" palette (navy / amber / brick,
+Fraunces + Inter).
 
 ## Features
 
 - **Auth** — email/password sign in & sign up via Supabase Auth. A database
   trigger auto-creates a `profiles` row (default role `agent`) on sign up.
-- **Leads list** — searchable, filterable table of every contact (by name,
-  call status, and assigned agent).
-- **Call mode** — work one contact at a time with a queue, progress bar, full
-  lead details, a notes field, and one-tap outcome buttons. Each outcome writes
-  a `call_activity` record and updates the lead's status, notes, and owner.
+- **Leads list** — searchable, filterable table (by name, call status, SEP)
+  with a live stats strip, inline status changes, and add / edit / delete
+  contacts (delete is admin-only, enforced by RLS).
+- **Call mode** — work one contact at a time with a queue, full lead details,
+  a notes field, and one-tap outcome buttons. Each outcome writes a
+  `call_activity` record and updates the lead's status, notes, and owner.
 - **Dashboard** — overall conversion rate, lead-status breakdown, an agent
   leaderboard (who worked which leads), and a recent-activity feed.
 - **Audit trail** — lead edits are captured in `audit_log` by an existing

@@ -22,7 +22,6 @@ export default function Login() {
     setError('')
     setInfo('')
     setLoading(true)
-
     try {
       if (mode === 'signin') {
         const { error } = await supabase.auth.signInWithPassword({
@@ -37,16 +36,15 @@ export default function Login() {
           options: { data: { full_name: fullName.trim() } },
         })
         if (error) throw error
-        // If email confirmation is on, there's no active session yet.
         if (!data.session) {
           setInfo(
-            'Account created. Check your email to confirm, then sign in.'
+            'Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.'
           )
           setMode('signin')
         }
       }
     } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.')
+      setError(traducirError(err.message))
     } finally {
       setLoading(false)
     }
@@ -55,14 +53,12 @@ export default function Login() {
   return (
     <div className="auth-wrap">
       <div className="auth-card">
-        <div className="auth-brand">
-          <img src="/favicon.svg" alt="" style={{ width: 32, height: 32 }} />
-          Candi Care CRM
-        </div>
+        <div className="auth-eyebrow">Seguimiento de afiliaciones</div>
+        <h1 className="auth-title display">Central de Llamadas</h1>
         <p className="auth-sub">
           {mode === 'signin'
-            ? 'Sign in to work your cold-call leads.'
-            : 'Create your agent account to get started.'}
+            ? 'Inicia sesión para trabajar tus contactos.'
+            : 'Crea tu cuenta de agente para empezar.'}
         </p>
 
         {error && <div className="alert alert-error">{error}</div>}
@@ -71,32 +67,32 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           {mode === 'signup' && (
             <div className="field">
-              <label htmlFor="fullName">Full name</label>
+              <label htmlFor="fullName">Nombre completo</label>
               <input
                 id="fullName"
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Jane Doe"
+                placeholder="Ana Pérez"
                 required
                 autoComplete="name"
               />
             </div>
           )}
           <div className="field">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Correo</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@candicare.com"
+              placeholder="tu@candicare.com"
               required
               autoComplete="email"
             />
           </div>
           <div className="field">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Contraseña</label>
             <input
               id="password"
               type="password"
@@ -113,21 +109,21 @@ export default function Login() {
 
           <button
             type="submit"
-            className="btn btn-primary btn-block"
+            className="btn-primary btn-block"
             disabled={loading}
           >
             {loading
-              ? 'Please wait…'
+              ? 'Un momento…'
               : mode === 'signin'
-                ? 'Sign in'
-                : 'Create account'}
+                ? 'Iniciar sesión'
+                : 'Crear cuenta'}
           </button>
         </form>
 
         <div className="auth-toggle">
           {mode === 'signin' ? (
             <>
-              No account yet?{' '}
+              ¿No tienes cuenta?{' '}
               <button
                 type="button"
                 onClick={() => {
@@ -136,12 +132,12 @@ export default function Login() {
                   setInfo('')
                 }}
               >
-                Sign up
+                Regístrate
               </button>
             </>
           ) : (
             <>
-              Already have an account?{' '}
+              ¿Ya tienes cuenta?{' '}
               <button
                 type="button"
                 onClick={() => {
@@ -150,7 +146,7 @@ export default function Login() {
                   setInfo('')
                 }}
               >
-                Sign in
+                Inicia sesión
               </button>
             </>
           )}
@@ -158,4 +154,15 @@ export default function Login() {
       </div>
     </div>
   )
+}
+
+function traducirError(msg = '') {
+  const m = msg.toLowerCase()
+  if (m.includes('invalid login credentials'))
+    return 'Correo o contraseña incorrectos.'
+  if (m.includes('already registered') || m.includes('already exists'))
+    return 'Ese correo ya está registrado. Inicia sesión.'
+  if (m.includes('password'))
+    return 'La contraseña debe tener al menos 6 caracteres.'
+  return msg || 'Algo salió mal. Intenta de nuevo.'
 }

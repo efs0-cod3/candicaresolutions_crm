@@ -16,14 +16,49 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 })
 
-// Human-friendly labels + colors for each call outcome / status.
+// Labels (Spanish) + palette for each call outcome / status.
+// color = text/dot color, pillBg = badge background, btnBg/btnColor = call-mode button.
 export const OUTCOMES = {
-  pending: { label: 'Pending', color: '#64748b', short: 'Pending' },
-  interested: { label: 'Interested', color: '#16a34a', short: 'Interested' },
-  notinterested: { label: 'Not interested', color: '#dc2626', short: 'Not int.' },
-  noanswer: { label: 'No answer', color: '#d97706', short: 'No answer' },
-  callback: { label: 'Call back', color: '#2563eb', short: 'Callback' },
-  voicemail: { label: 'Voicemail', color: '#7c3aed', short: 'Voicemail' },
+  pending: {
+    label: 'Sin llamar',
+    color: '#6E7C90',
+    pillBg: '#E7EBF0',
+  },
+  interested: {
+    label: 'Interesado',
+    color: '#8A5A0E',
+    pillBg: '#FBEAD2',
+    btnBg: '#D98E2B',
+    btnColor: '#2A1B04',
+  },
+  notinterested: {
+    label: 'No interesado',
+    color: '#A5493D',
+    pillBg: '#F5E1DD',
+    btnBg: '#A5493D',
+    btnColor: '#FFFFFF',
+  },
+  noanswer: {
+    label: 'No contestó',
+    color: '#777777',
+    pillBg: '#EEEEEE',
+    btnBg: '#DDDDDD',
+    btnColor: '#333333',
+  },
+  callback: {
+    label: 'Volver a llamar',
+    color: '#2C6A72',
+    pillBg: '#E4EEF0',
+    btnBg: '#2C6A72',
+    btnColor: '#FFFFFF',
+  },
+  voicemail: {
+    label: 'Buzón de voz',
+    color: '#6A4EA6',
+    pillBg: '#EFEAF7',
+    btnBg: '#6A4EA6',
+    btnColor: '#FFFFFF',
+  },
 }
 
 // Outcomes an agent can log from call mode (everything except the initial "pending").

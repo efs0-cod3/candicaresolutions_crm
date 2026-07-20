@@ -5,9 +5,8 @@ export default function StatusBadge({ status }) {
   return (
     <span
       className="badge"
-      style={{ background: `${meta.color}18`, color: meta.color }}
+      style={{ background: meta.pillBg, color: meta.color }}
     >
-      <span className="badge-dot" style={{ background: meta.color }} />
       {meta.label}
     </span>
   )
