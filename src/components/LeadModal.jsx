@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 const EMPTY = {
   name: '',
   phone: '',
+  birth_date: '',
   previous_plan: '',
   new_plan: '',
   sep: '',
@@ -17,8 +18,10 @@ const EMPTY = {
 
 // Modal for adding a new lead or editing an existing one.
 // `lead` = null → create; otherwise edit. Calls onSaved() after success.
+// Amount / HRA fields are shown and saved only for admins; they live in the
+// admin-only `lead_financials` table.
 export default function LeadModal({ lead, onClose, onSaved }) {
-  const { user } = useAuth()
+  const { isAdmin } = useAuth()
   const isNew = !lead
   const [form, setForm] = useState(() =>
     isNew
@@ -26,6 +29,7 @@ export default function LeadModal({ lead, onClose, onSaved }) {
       : {
           name: lead.name || '',
           phone: lead.phone || '',
+          birth_date: lead.birth_date || '',
           previous_plan: lead.previous_plan || '',
           new_plan: lead.new_plan || '',
           sep: lead.sep || '',
@@ -43,6 +47,18 @@ export default function LeadModal({ lead, onClose, onSaved }) {
     setForm((f) => ({ ...f, [field]: value }))
   }
 
+  // Upsert the admin-only financial row for a given lead id.
+  async function saveFinancials(leadId) {
+    const amount = form.amount === '' ? null : Number(form.amount)
+    const hra = form.hra === '' ? null : Number(form.hra)
+    return supabase.from('lead_financials').upsert({
+      lead_id: leadId,
+      amount,
+      hra,
+      updated_at: new Date().toISOString(),
+    })
+  }
+
   async function handleSave() {
     if (!form.name.trim()) {
       setError('El nombre es obligatorio.')
@@ -54,32 +70,51 @@ export default function LeadModal({ lead, onClose, onSaved }) {
     const payload = {
       name: form.name.trim(),
       phone: form.phone.trim() || null,
+      birth_date: form.birth_date || null,
       previous_plan: form.previous_plan.trim() || null,
       new_plan: form.new_plan.trim() || null,
       sep: form.sep.trim() || null,
       enroll_date: form.enroll_date || null,
       enroll_status: form.enroll_status.trim() || null,
-      amount: form.amount === '' ? null : Number(form.amount),
-      hra: form.hra === '' ? null : Number(form.hra),
       notes: form.notes.trim() || null,
     }
 
-    let res
+    let leadId = lead?.id
     if (isNew) {
       // created_by is stamped by the stamp_created_by trigger.
-      res = await supabase.from('leads').insert(payload)
-    } else {
-      res = await supabase
+      const { data, error } = await supabase
         .from('leads')
-        .update({ ...payload, updated_by: user.id, updated_at: new Date().toISOString() })
+        .insert(payload)
+        .select('id')
+        .single()
+      if (error) {
+        setError(error.message)
+        setSaving(false)
+        return
+      }
+      leadId = data.id
+    } else {
+      const { error } = await supabase
+        .from('leads')
+        .update(payload)
         .eq('id', lead.id)
+      if (error) {
+        setError(error.message)
+        setSaving(false)
+        return
+      }
     }
 
-    if (res.error) {
-      setError(res.error.message)
-      setSaving(false)
-      return
+    // Only admins can read/write financials.
+    if (isAdmin) {
+      const { error } = await saveFinancials(leadId)
+      if (error) {
+        setError(`Contacto guardado, pero falló guardar el monto: ${error.message}`)
+        setSaving(false)
+        return
+      }
     }
+
     setSaving(false)
     onSaved()
   }
@@ -116,6 +151,14 @@ export default function LeadModal({ lead, onClose, onSaved }) {
           />
         </div>
         <div className="field">
+          <label>Fecha de nacimiento</label>
+          <input
+            type="date"
+            value={form.birth_date}
+            onChange={(e) => set('birth_date', e.target.value)}
+          />
+        </div>
+        <div className="field">
           <label>Plan anterior</label>
           <input
             value={form.previous_plan}
@@ -149,24 +192,30 @@ export default function LeadModal({ lead, onClose, onSaved }) {
             placeholder="Approved, Pending…"
           />
         </div>
-        <div className="field">
-          <label>Monto</label>
-          <input
-            type="number"
-            step="0.01"
-            value={form.amount}
-            onChange={(e) => set('amount', e.target.value)}
-          />
-        </div>
-        <div className="field">
-          <label>HRA</label>
-          <input
-            type="number"
-            step="0.01"
-            value={form.hra}
-            onChange={(e) => set('hra', e.target.value)}
-          />
-        </div>
+
+        {isAdmin && (
+          <>
+            <div className="field">
+              <label>Monto</label>
+              <input
+                type="number"
+                step="0.01"
+                value={form.amount}
+                onChange={(e) => set('amount', e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label>HRA</label>
+              <input
+                type="number"
+                step="0.01"
+                value={form.hra}
+                onChange={(e) => set('hra', e.target.value)}
+              />
+            </div>
+          </>
+        )}
+
         <div className="field">
           <label>Notas</label>
           <input

@@ -2,13 +2,14 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Layout() {
-  const { profile, user, signOut } = useAuth()
+  const { profile, user, isAdmin, signOut } = useAuth()
   const displayName = profile?.full_name || user?.email || 'Agente'
 
   const tabs = [
     { to: '/leads', label: 'Lista' },
     { to: '/call', label: 'Modo Llamada' },
     { to: '/dashboard', label: 'Panel' },
+    ...(isAdmin ? [{ to: '/amounts', label: 'Montos' }] : []),
   ]
 
   return (

@@ -85,13 +85,20 @@ triggers configured:
 
 - **`profiles`** — `id` (→ `auth.users`), `full_name`, `role` (`admin`/`agent`).
   Auto-populated on sign up by the `handle_new_user` trigger.
-- **`leads`** — contact + enrollment data (`previous_plan`, `new_plan`, `sep`,
-  `enroll_date`, `enroll_status`, `amount`, `hra`) plus `call_status`, `notes`,
-  and ownership columns (`assigned_to`, `created_by`, `updated_by`).
+- **`leads`** — contact + enrollment data (`name`, `phone`, `birth_date`,
+  `previous_plan`, `new_plan`, `sep`, `enroll_date`, `enroll_status`) plus
+  `call_status`, `notes`, and ownership columns (`assigned_to`, `created_by`,
+  `updated_by`). Readable by any authenticated agent.
+- **`lead_financials`** — admin-only financial data (`amount`, `hra`) keyed by
+  `lead_id`. RLS restricts all access to admins via the `is_admin()` helper, so
+  agents cannot read amounts even through the API. Cascades on lead delete.
 - **`call_activity`** — one row per logged call: `lead_id`, `agent_id`,
   `outcome`, `notes`. RLS requires `agent_id = auth.uid()` on insert.
 - **`audit_log`** — field-level change history for leads, written by the
   `log_lead_changes` trigger.
+
+The **Montos** dashboard (admin-only tab) sums `amount` and `hra` grouped by
+month of `enroll_date`.
 
 ### Call outcomes
 

@@ -18,7 +18,7 @@ function fmtDate(d) {
 const TERMINAL = ['interested', 'notinterested']
 
 export default function CallMode() {
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
   const [queue, setQueue] = useState([])
   const [index, setIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -34,7 +34,7 @@ export default function CallMode() {
     let query = supabase
       .from('leads')
       .select(
-        'id, name, phone, previous_plan, new_plan, sep, enroll_date, enroll_status, amount, hra, call_status, notes'
+        'id, name, phone, birth_date, previous_plan, new_plan, sep, enroll_date, enroll_status, call_status, notes, lead_financials(amount, hra)'
       )
       .order('enroll_date', { ascending: true })
 
@@ -45,7 +45,14 @@ export default function CallMode() {
     }
     const { data, error } = await query
     if (error) setError(error.message)
-    setQueue(data || [])
+    // Flatten the admin-only financials embed (empty for non-admins per RLS).
+    const rows = (data || []).map((l) => {
+      const fin = Array.isArray(l.lead_financials)
+        ? l.lead_financials[0]
+        : l.lead_financials
+      return { ...l, amount: fin?.amount ?? null, hra: fin?.hra ?? null }
+    })
+    setQueue(rows)
     setIndex(0)
     setLoading(false)
   }
@@ -191,15 +198,21 @@ export default function CallMode() {
                   <div className="fact-val">{current.new_plan || '—'}</div>
                 </div>
                 <div>
-                  <div className="fact-lbl">Fecha</div>
+                  <div className="fact-lbl">Afiliación</div>
                   <div className="fact-val">{fmtDate(current.enroll_date)}</div>
                 </div>
                 <div>
-                  <div className="fact-lbl">Monto / HRA</div>
-                  <div className="fact-val">
-                    {money(current.amount)} · {money(current.hra)}
-                  </div>
+                  <div className="fact-lbl">Nacimiento</div>
+                  <div className="fact-val">{fmtDate(current.birth_date)}</div>
                 </div>
+                {isAdmin && (
+                  <div>
+                    <div className="fact-lbl">Monto / HRA</div>
+                    <div className="fact-val">
+                      {money(current.amount)} · {money(current.hra)}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="call-notes">

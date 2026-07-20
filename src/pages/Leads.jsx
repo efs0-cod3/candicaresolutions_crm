@@ -32,11 +32,18 @@ export default function Leads() {
     const { data, error } = await supabase
       .from('leads')
       .select(
-        'id, name, phone, previous_plan, new_plan, sep, enroll_date, enroll_status, amount, hra, call_status, notes, updated_at'
+        'id, name, phone, birth_date, previous_plan, new_plan, sep, enroll_date, enroll_status, call_status, notes, updated_at, lead_financials(amount, hra)'
       )
       .order('enroll_date', { ascending: true })
     if (error) setError(error.message)
-    setLeads(data || [])
+    // Flatten the admin-only financials embed (empty for non-admins per RLS).
+    const rows = (data || []).map((l) => {
+      const fin = Array.isArray(l.lead_financials)
+        ? l.lead_financials[0]
+        : l.lead_financials
+      return { ...l, amount: fin?.amount ?? null, hra: fin?.hra ?? null }
+    })
+    setLeads(rows)
     setLoading(false)
   }
 
@@ -189,10 +196,14 @@ export default function Leads() {
                   <div>
                     <span className="badge sep">{l.sep || '—'}</span>
                   </div>
-                  <div className="amt">
-                    {money(l.amount)}
-                    <div className="sub">HRA {money(l.hra)}</div>
-                  </div>
+                  {isAdmin ? (
+                    <div className="amt">
+                      {money(l.amount)}
+                      <div className="sub">HRA {money(l.hra)}</div>
+                    </div>
+                  ) : (
+                    <div />
+                  )}
                   <div>
                     <select
                       className="status-pill"

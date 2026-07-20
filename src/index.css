@@ -612,6 +612,10 @@ select.chip {
 .mini-table tr:last-child td {
   border-bottom: none;
 }
+.mini-table tfoot td {
+  border-top: 2px solid var(--line);
+  border-bottom: none;
+}
 
 /* ---------- Auth ---------- */
 .auth-wrap {
