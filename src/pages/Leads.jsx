@@ -236,6 +236,12 @@ export default function Leads() {
                       </button>
                     )}
                   </div>
+                  {l.call_status === 'interested' && l.notes && (
+                    <div className="lead-note">
+                      <span className="lead-note-tag">Interesado</span>
+                      {l.notes}
+                    </div>
+                  )}
                 </div>
               )
             })}
