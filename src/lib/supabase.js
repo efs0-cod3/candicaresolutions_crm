@@ -1,13 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Public client-side credentials. The publishable/anon key is safe to expose in
-// the browser bundle — access is still governed by Row Level Security.
-// Values come from .env (VITE_*), with a fallback so the app runs out of the box.
-const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL || 'https://gtuknjbftbmkenfwqlsp.supabase.co'
-const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_K ||
-  'sb_publishable_BsiUH6rbCjVh3l37dCoQVw_nUaHTuBH'
+// Public client-side credentials, provided via Vite env vars (see .env.example).
+// The publishable key is safe to expose in the browser bundle — access is still
+// governed by Row Level Security.
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_K
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Faltan las variables de entorno VITE_SUPABASE_URL y/o VITE_SUPABASE_ANON_K.'
+  )
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
