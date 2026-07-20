@@ -12,7 +12,7 @@ export default function Dashboard() {
     ;(async () => {
       setLoading(true)
       const [leadsRes, actRes, profRes] = await Promise.all([
-        supabase.from('leads').select('id, call_status, amount'),
+        supabase.from('leads').select('id, call_status'),
         supabase
           .from('call_activity')
           .select('id, lead_id, agent_id, outcome, created_at')
