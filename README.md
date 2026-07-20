@@ -54,6 +54,27 @@ VITE_SUPABASE_ANON_KEY=sb_publishable_xxxxxxxxxxxxxxxxxxxxxx
 > to ship in the browser bundle. All access is enforced server-side by Row Level
 > Security, so exposing it is safe.
 
+## Deploy to Vercel
+
+The app is a static Vite SPA, so Vercel needs no build config beyond the
+included `vercel.json` (which rewrites all routes to `index.html` so React
+Router deep links don't 404). Supabase stays separate — it's the backend/DB;
+Vercel only serves the front end.
+
+1. Push this repo to GitHub (already done).
+2. On [vercel.com](https://vercel.com) → **Add New → Project** → import this repo.
+   Vercel auto-detects Vite (build `vite build`, output `dist`).
+3. Under **Environment Variables**, add:
+   - `VITE_SUPABASE_URL` → `https://gtuknjbftbmkenfwqlsp.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY` → `sb_publishable_BsiUH6rbCjVh3l37dCoQVw_nUaHTuBH`
+4. **Deploy.** Every future `git push` triggers a new deployment automatically.
+
+> After the first deploy, add the Vercel URL to Supabase → **Authentication →
+> URL Configuration** (Site URL / redirect URLs) so email confirmation links
+> resolve back to the app.
+
+Local prod preview: `npm run build && npm run preview`.
+
 ## Supabase schema (already provisioned)
 
 The project `central-llamadas-crm` already has these tables with RLS and
