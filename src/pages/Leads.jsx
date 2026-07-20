@@ -23,6 +23,7 @@ export default function Leads() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [sepFilter, setSepFilter] = useState('all')
+  const [planFilter, setPlanFilter] = useState('all')
 
   const [modalLead, setModalLead] = useState(undefined) // undefined=closed, null=new, obj=edit
 
@@ -64,15 +65,21 @@ export default function Leads() {
     [leads]
   )
 
+  const plans = useMemo(
+    () => [...new Set(leads.map((l) => l.new_plan).filter(Boolean))].sort(),
+    [leads]
+  )
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return leads.filter((l) => {
       if (statusFilter !== 'all' && l.call_status !== statusFilter) return false
       if (sepFilter !== 'all' && l.sep !== sepFilter) return false
+      if (planFilter !== 'all' && l.new_plan !== planFilter) return false
       if (q && !(l.name || '').toLowerCase().includes(q)) return false
       return true
     })
-  }, [leads, search, statusFilter, sepFilter])
+  }, [leads, search, statusFilter, sepFilter, planFilter])
 
   async function setStatus(id, status) {
     // optimistic update
@@ -155,6 +162,18 @@ export default function Leads() {
             {seps.map((s) => (
               <option key={s} value={s}>
                 {s}
+              </option>
+            ))}
+          </select>
+          <select
+            className="chip"
+            value={planFilter}
+            onChange={(e) => setPlanFilter(e.target.value)}
+          >
+            <option value="all">Todos los planes</option>
+            {plans.map((p) => (
+              <option key={p} value={p}>
+                {p}
               </option>
             ))}
           </select>
