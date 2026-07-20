@@ -32,7 +32,7 @@ export default function Leads() {
     const { data, error } = await supabase
       .from('leads')
       .select(
-        'id, name, previous_plan, new_plan, sep, enroll_date, enroll_status, amount, hra, call_status, notes, updated_at'
+        'id, name, phone, previous_plan, new_plan, sep, enroll_date, enroll_status, amount, hra, call_status, notes, updated_at'
       )
       .order('enroll_date', { ascending: true })
     if (error) setError(error.message)
@@ -168,7 +168,20 @@ export default function Leads() {
                 <div className="lead-row" key={l.id}>
                   <div>
                     <div className="lead-name">{l.name}</div>
-                    <div className="lead-sub">{fmtDate(l.enroll_date)}</div>
+                    <div className="lead-sub">
+                      {l.phone ? (
+                        <a
+                          href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          📞 {l.phone}
+                        </a>
+                      ) : (
+                        <span className="muted">Sin teléfono</span>
+                      )}
+                      {' · '}
+                      {fmtDate(l.enroll_date)}
+                    </div>
                   </div>
                   <div className="plan-move">
                     {l.previous_plan || '—'} → <b>{l.new_plan || '—'}</b>

@@ -34,7 +34,7 @@ export default function CallMode() {
     let query = supabase
       .from('leads')
       .select(
-        'id, name, previous_plan, new_plan, sep, enroll_date, enroll_status, amount, hra, call_status, notes'
+        'id, name, phone, previous_plan, new_plan, sep, enroll_date, enroll_status, amount, hra, call_status, notes'
       )
       .order('enroll_date', { ascending: true })
 
@@ -167,6 +167,19 @@ export default function CallMode() {
               <div className="call-sep">
                 <span className="badge sep">{current.sep || '—'}</span>
               </div>
+
+              {current.phone ? (
+                <a
+                  className="call-phone"
+                  href={`tel:${current.phone.replace(/[^+\d]/g, '')}`}
+                >
+                  📞 {current.phone}
+                </a>
+              ) : (
+                <div className="call-phone call-phone--empty">
+                  Sin teléfono registrado
+                </div>
+              )}
 
               <div className="call-facts">
                 <div>
