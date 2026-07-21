@@ -9,7 +9,12 @@ export default function Layout() {
     { to: '/leads', label: 'Lista' },
     { to: '/call', label: 'Modo Llamada' },
     { to: '/dashboard', label: 'Panel' },
-    ...(isAdmin ? [{ to: '/amounts', label: 'Montos' }] : []),
+    ...(isAdmin
+      ? [
+          { to: '/amounts', label: 'Montos' },
+          { to: '/import', label: 'Importar' },
+        ]
+      : []),
   ]
 
   return (

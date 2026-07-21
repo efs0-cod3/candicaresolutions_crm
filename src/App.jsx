@@ -7,6 +7,7 @@ import Leads from './pages/Leads'
 import CallMode from './pages/CallMode'
 import Dashboard from './pages/Dashboard'
 import AmountsDashboard from './pages/AmountsDashboard'
+import ImportLeads from './pages/ImportLeads'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/call" element={<CallMode />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/amounts" element={<AmountsDashboard />} />
+            <Route path="/import" element={<ImportLeads />} />
           </Route>
           <Route path="*" element={<Navigate to="/leads" replace />} />
         </Routes>
