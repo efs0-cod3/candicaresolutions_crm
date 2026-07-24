@@ -360,6 +360,88 @@ select.chip {
   color: var(--ink-soft);
 }
 
+/* ---------- View toggle ---------- */
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--panel);
+}
+.view-toggle button {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.view-toggle button.active {
+  background: var(--navy);
+  color: #fff;
+}
+
+/* ---------- Card view ---------- */
+.lead-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 12px;
+}
+.lead-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lead-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.lead-card-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.lead-card .status-pill {
+  width: 100%;
+}
+.lead-card .lead-note {
+  display: flex;
+}
+
+/* ---------- Pagination ---------- */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.pager-info {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.pager-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pager-page {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
 /* ---------- Call mode ---------- */
 .call-wrap {
   display: flex;
