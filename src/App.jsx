@@ -8,6 +8,7 @@ import CallMode from './pages/CallMode'
 import Dashboard from './pages/Dashboard'
 import AmountsDashboard from './pages/AmountsDashboard'
 import ImportLeads from './pages/ImportLeads'
+import UsersAdmin from './pages/UsersAdmin'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/amounts" element={<AmountsDashboard />} />
             <Route path="/import" element={<ImportLeads />} />
+            <Route path="/usuarios" element={<UsersAdmin />} />
           </Route>
           <Route path="*" element={<Navigate to="/leads" replace />} />
         </Routes>

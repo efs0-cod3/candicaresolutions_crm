@@ -58,7 +58,7 @@ export default function Login() {
         <p className="auth-sub">
           {mode === 'signin'
             ? 'Inicia sesión para trabajar tus contactos.'
-            : 'Crea tu cuenta de agente para empezar.'}
+            : 'Solo puedes registrarte si un administrador invitó tu correo.'}
         </p>
 
         {error && <div className="alert alert-error">{error}</div>}
@@ -123,7 +123,7 @@ export default function Login() {
         <div className="auth-toggle">
           {mode === 'signin' ? (
             <>
-              ¿No tienes cuenta?{' '}
+              ¿Tienes una invitación?{' '}
               <button
                 type="button"
                 onClick={() => {
@@ -132,7 +132,7 @@ export default function Login() {
                   setInfo('')
                 }}
               >
-                Regístrate
+                Crea tu cuenta
               </button>
             </>
           ) : (
@@ -158,6 +158,12 @@ export default function Login() {
 
 function traducirError(msg = '') {
   const m = msg.toLowerCase()
+  if (
+    m.includes('not_invited') ||
+    m.includes('not on the invite') ||
+    m.includes('database error saving new user')
+  )
+    return 'Este correo no tiene una invitación. Pídele al administrador que te invite.'
   if (m.includes('invalid login credentials'))
     return 'Correo o contraseña incorrectos.'
   if (m.includes('already registered') || m.includes('already exists'))
