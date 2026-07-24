@@ -3,7 +3,7 @@ import { supabase, OUTCOMES } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import LeadModal from '../components/LeadModal'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE_OPTIONS = [5, 10, 20] // 20 = máximo por página
 const MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
@@ -37,11 +37,21 @@ export default function Leads() {
     () => localStorage.getItem('leadsView') || 'list'
   )
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(() => {
+    const saved = Number(localStorage.getItem('leadsPageSize'))
+    return PAGE_SIZE_OPTIONS.includes(saved) ? saved : 20
+  })
   const [modalLead, setModalLead] = useState(undefined) // undefined=closed, null=new, obj=edit
 
   function changeView(v) {
     setView(v)
     localStorage.setItem('leadsView', v)
+  }
+
+  function changePageSize(n) {
+    setPageSize(n)
+    localStorage.setItem('leadsPageSize', String(n))
+    setPage(1)
   }
 
   async function load() {
@@ -111,9 +121,9 @@ export default function Leads() {
     setPage(1)
   }, [search, statusFilter, sepFilter, planFilter, yearFilter, monthFilter])
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage = Math.min(page, pageCount)
-  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   async function setStatus(id, status) {
     setLeads((prev) =>
@@ -347,10 +357,24 @@ export default function Leads() {
             )}
 
             <div className="pager">
-              <span className="pager-info">
-                {(safePage - 1) * PAGE_SIZE + 1}–
-                {Math.min(safePage * PAGE_SIZE, filtered.length)} de {filtered.length}
-              </span>
+              <div className="pager-left">
+                <span className="pager-info">
+                  {(safePage - 1) * pageSize + 1}–
+                  {Math.min(safePage * pageSize, filtered.length)} de {filtered.length}
+                </span>
+                <label className="pager-size">
+                  Ver
+                  <select
+                    value={pageSize}
+                    onChange={(e) => changePageSize(Number(e.target.value))}
+                  >
+                    {PAGE_SIZE_OPTIONS.map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                  por página
+                </label>
+              </div>
               <div className="pager-controls">
                 <button
                   className="btn-secondary"

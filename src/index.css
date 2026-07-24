@@ -245,6 +245,24 @@ select.chip {
   grid-template-columns: 1.4fr 1fr 1fr 0.9fr 1.3fr auto;
   gap: 12px;
   align-items: center;
+  position: relative;
+  transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+}
+/* Hover highlight so it's clear which item you're on. */
+.lead-row:hover {
+  border-color: var(--navy);
+  box-shadow: 0 3px 12px rgba(14, 44, 41, 0.09);
+  background: #fcfdfc;
+}
+.lead-row:hover::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--amber);
 }
 .lead-name {
   font-weight: 700;
@@ -395,6 +413,12 @@ select.chip {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+}
+.lead-card:hover {
+  border-color: var(--navy);
+  box-shadow: 0 6px 18px rgba(14, 44, 41, 0.12);
+  transform: translateY(-2px);
 }
 .lead-card-head {
   display: flex;
@@ -426,9 +450,31 @@ select.chip {
   margin-top: 16px;
   flex-wrap: wrap;
 }
+.pager-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 .pager-info {
   font-size: 13px;
   color: var(--ink-soft);
+}
+.pager-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.pager-size select {
+  width: auto;
+  padding: 5px 8px;
+  font-size: 13px;
 }
 .pager-controls {
   display: flex;
