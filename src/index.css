@@ -441,6 +441,65 @@ select.chip {
   display: flex;
 }
 
+/* ---------- Tasks ---------- */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.task-item:last-child {
+  border-bottom: none;
+}
+.task-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid var(--line);
+  background: var(--panel);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 1px;
+}
+.task-item.is-done .task-check {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+.task-body {
+  flex: 1;
+  min-width: 0;
+}
+.task-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+.task-item.is-done .task-title {
+  text-decoration: line-through;
+  color: var(--ink-soft);
+}
+.task-details {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-faint, #94a3b8);
+  margin-top: 4px;
+}
+
 /* ---------- Pagination ---------- */
 .pager {
   display: flex;
