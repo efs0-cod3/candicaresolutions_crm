@@ -9,6 +9,7 @@ export default function Layout() {
     { to: '/leads', label: 'Lista' },
     { to: '/call', label: 'Modo Llamada' },
     { to: '/dashboard', label: 'Panel' },
+    { to: '/tareas', label: 'Tareas' },
     ...(isAdmin
       ? [
           { to: '/amounts', label: 'Montos' },

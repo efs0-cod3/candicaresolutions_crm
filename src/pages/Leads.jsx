@@ -32,6 +32,7 @@ export default function Leads() {
   const [planFilter, setPlanFilter] = useState('all')
   const [yearFilter, setYearFilter] = useState('all')
   const [monthFilter, setMonthFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('name_asc')
 
   const [view, setView] = useState(
     () => localStorage.getItem('leadsView') || 'list'
@@ -104,7 +105,7 @@ export default function Leads() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    return leads.filter((l) => {
+    const rows = leads.filter((l) => {
       const ed = l.enroll_date || ''
       if (statusFilter !== 'all' && l.call_status !== statusFilter) return false
       if (sepFilter !== 'all' && l.sep !== sepFilter) return false
@@ -114,12 +115,24 @@ export default function Leads() {
       if (q && !(l.name || '').toLowerCase().includes(q)) return false
       return true
     })
-  }, [leads, search, statusFilter, sepFilter, planFilter, yearFilter, monthFilter])
+    const byName = (a, b) =>
+      (a.name || '').localeCompare(b.name || '', 'es', { sensitivity: 'base' })
+    const byDate = (a, b) => (a.enroll_date || '').localeCompare(b.enroll_date || '')
+    rows.sort((a, b) => {
+      switch (sortBy) {
+        case 'name_desc': return -byName(a, b)
+        case 'date_asc': return byDate(a, b)
+        case 'date_desc': return -byDate(a, b)
+        default: return byName(a, b) // name_asc
+      }
+    })
+    return rows
+  }, [leads, search, statusFilter, sepFilter, planFilter, yearFilter, monthFilter, sortBy])
 
-  // Reset to first page whenever the filter set changes.
+  // Reset to first page whenever the filter/sort set changes.
   useEffect(() => {
     setPage(1)
-  }, [search, statusFilter, sepFilter, planFilter, yearFilter, monthFilter])
+  }, [search, statusFilter, sepFilter, planFilter, yearFilter, monthFilter, sortBy])
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage = Math.min(page, pageCount)
@@ -264,6 +277,12 @@ export default function Leads() {
             {monthOptions.map((mm) => (
               <option key={mm} value={mm}>{MONTHS[Number(mm) - 1]}</option>
             ))}
+          </select>
+          <select className="chip" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="name_asc">Nombre (A→Z)</option>
+            <option value="name_desc">Nombre (Z→A)</option>
+            <option value="date_desc">Fecha de entrada (reciente)</option>
+            <option value="date_asc">Fecha de entrada (antigua)</option>
           </select>
           <div className="view-toggle">
             <button

@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import AmountsDashboard from './pages/AmountsDashboard'
 import ImportLeads from './pages/ImportLeads'
 import UsersAdmin from './pages/UsersAdmin'
+import Tasks from './pages/Tasks'
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/leads" element={<Leads />} />
             <Route path="/call" element={<CallMode />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/tareas" element={<Tasks />} />
             <Route path="/amounts" element={<AmountsDashboard />} />
             <Route path="/import" element={<ImportLeads />} />
             <Route path="/usuarios" element={<UsersAdmin />} />
