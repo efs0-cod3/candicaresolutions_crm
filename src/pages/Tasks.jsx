@@ -9,6 +9,21 @@ function fmtDate(d) {
   return `${m}/${day}/${y}`
 }
 
+function todayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+    d.getDate()
+  ).padStart(2, '0')}`
+}
+
+function dueInfo(due, status) {
+  if (!due || status === 'done') return null
+  const today = todayStr()
+  if (due < today) return { label: 'Vencida', cls: 'overdue' }
+  if (due === today) return { label: 'Hoy', cls: 'today' }
+  return null
+}
+
 export default function Tasks() {
   const { user, isAdmin } = useAuth()
   const [tasks, setTasks] = useState([])
@@ -126,6 +141,12 @@ export default function Tasks() {
           <div className="task-meta">
             {isAdmin && <span>👤 {nameOf[t.assigned_to] || 'Agente'}</span>}
             {t.due_date && <span>📅 {fmtDate(t.due_date)}</span>}
+            {(() => {
+              const info = dueInfo(t.due_date, t.status)
+              return info ? (
+                <span className={`bell-tag ${info.cls}`}>{info.label}</span>
+              ) : null
+            })()}
           </div>
         </div>
         {isAdmin && (
