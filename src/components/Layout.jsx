@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import NotificationBell from './NotificationBell'
 
 export default function Layout() {
   const { profile, user, isAdmin, signOut } = useAuth()
@@ -40,6 +41,7 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
+          <NotificationBell />
           <div className="topbar-user">
             <div>
               <div className="u-name">{displayName}</div>
