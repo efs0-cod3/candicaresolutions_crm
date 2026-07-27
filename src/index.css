@@ -1080,7 +1080,78 @@ select.chip {
   color: var(--ink-soft);
 }
 
+/* Topbar stacks on small screens: brand on top, then a scrollable tab
+   strip, then the bell + user row. */
+@media (max-width: 860px) {
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px;
+  }
+  .topbar h1 {
+    font-size: 22px;
+  }
+  .topbar-right {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .tabs {
+    order: 1;
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-btn {
+    flex: 0 0 auto;
+  }
+  .bell-wrap {
+    order: 2;
+  }
+  .topbar-user {
+    order: 2;
+    margin-left: auto;
+  }
+}
+
 @media (max-width: 720px) {
+  .content {
+    padding: 20px 16px 60px;
+  }
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Filters stack: search full width, selects two-up, toggle/add full width. */
+  .filters input[type='text'] {
+    flex: 1 1 100%;
+  }
+  .filters select.chip {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+    width: auto;
+  }
+  .view-toggle {
+    flex: 1 1 100%;
+  }
+  .view-toggle button {
+    flex: 1;
+  }
+  .filters .add-btn {
+    flex: 1 1 100%;
+  }
+
+  /* Wide tables scroll inside their card instead of overflowing the page. */
+  .card {
+    overflow-x: auto;
+  }
+
   .lead-row {
     grid-template-columns: 1fr 1fr;
   }
@@ -1090,16 +1161,29 @@ select.chip {
   .amt {
     text-align: left;
   }
-  .stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .status-pill {
     min-width: 0;
+    width: 100%;
   }
-  .content {
-    padding: 20px 16px 60px;
+}
+
+@media (max-width: 480px) {
+  .lead-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
-  .topbar {
-    padding: 18px 16px;
+  .pager {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .pager-controls {
+    justify-content: space-between;
+  }
+  .call-card {
+    padding: 22px 18px;
+  }
+  .call-name {
+    font-size: 26px;
   }
 }
