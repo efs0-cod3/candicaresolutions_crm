@@ -12,7 +12,7 @@ export default function Dashboard() {
     ;(async () => {
       setLoading(true)
       const [leadsRes, actRes, profRes] = await Promise.all([
-        supabase.from('leads').select('id, call_status'),
+        supabase.from('leads').select('id, call_status, name, birth_date, phone'),
         supabase
           .from('call_activity')
           .select('id, lead_id, agent_id, outcome, created_at')
@@ -32,6 +32,15 @@ export default function Dashboard() {
     profiles.forEach((p) => (m[p.id] = p))
     return m
   }, [profiles])
+
+  // Contacts whose birthday (month + day) is today.
+  const birthdays = useMemo(() => {
+    const now = new Date()
+    const md = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+      now.getDate()
+    ).padStart(2, '0')}`
+    return leads.filter((l) => l.birth_date && l.birth_date.slice(5) === md)
+  }, [leads])
 
   const stats = useMemo(() => {
     const total = leads.length
@@ -104,6 +113,29 @@ export default function Dashboard() {
           <div className="spinner" />
         ) : (
           <div className="panel-grid">
+            <div className="card birthday-card" style={{ gridColumn: '1 / -1' }}>
+              <h3 className="card-title">🎂 Cumpleaños de hoy ({birthdays.length})</h3>
+              {birthdays.length === 0 ? (
+                <p className="muted">Nadie cumple años hoy.</p>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {birthdays.map((b) => (
+                    <span key={b.id} className="birthday-chip">
+                      🎉 {b.name}
+                      {b.phone && (
+                        <a
+                          href={`tel:${b.phone.replace(/[^+\d]/g, '')}`}
+                          style={{ marginLeft: 8 }}
+                        >
+                          📞 {b.phone}
+                        </a>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="card">
               <h3 className="card-title">Leads por estado</h3>
               {outcomeBars.map(({ key, meta, count, pct }) => (

@@ -578,6 +578,23 @@ select.chip {
   display: flex;
 }
 
+/* ---------- Birthdays ---------- */
+.birthday-card {
+  background: linear-gradient(135deg, var(--amber-soft) 0%, var(--panel) 70%);
+  border-color: #eed6ad;
+}
+.birthday-chip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid #eed6ad;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
 /* ---------- Tasks ---------- */
 .task-list {
   display: flex;
