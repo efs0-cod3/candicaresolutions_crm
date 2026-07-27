@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, STAGES, STAGE_ORDER } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
 const EMPTY = {
   name: '',
+  stage: 'lead',
   phone: '',
   birth_date: '',
   previous_plan: '',
@@ -28,6 +29,7 @@ export default function LeadModal({ lead, onClose, onSaved }) {
       ? { ...EMPTY }
       : {
           name: lead.name || '',
+          stage: lead.stage || 'lead',
           phone: lead.phone || '',
           birth_date: lead.birth_date || '',
           previous_plan: lead.previous_plan || '',
@@ -69,6 +71,7 @@ export default function LeadModal({ lead, onClose, onSaved }) {
 
     const payload = {
       name: form.name.trim(),
+      stage: form.stage,
       phone: form.phone.trim() || null,
       birth_date: form.birth_date || null,
       previous_plan: form.previous_plan.trim() || null,
@@ -133,6 +136,12 @@ export default function LeadModal({ lead, onClose, onSaved }) {
 
         {error && <div className="alert alert-error">{error}</div>}
 
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSave()
+          }}
+        >
         <div className="field">
           <label>Nombre</label>
           <input
@@ -140,6 +149,14 @@ export default function LeadModal({ lead, onClose, onSaved }) {
             onChange={(e) => set('name', e.target.value)}
             autoFocus
           />
+        </div>
+        <div className="field">
+          <label>Etapa</label>
+          <select value={form.stage} onChange={(e) => set('stage', e.target.value)}>
+            {STAGE_ORDER.map((s) => (
+              <option key={s} value={s}>{STAGES[s]}</option>
+            ))}
+          </select>
         </div>
         <div className="field">
           <label>Teléfono</label>
@@ -225,13 +242,19 @@ export default function LeadModal({ lead, onClose, onSaved }) {
         </div>
 
         <div className="modal-actions">
-          <button className="btn-secondary" onClick={onClose} disabled={saving}>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={onClose}
+            disabled={saving}
+          >
             Cancelar
           </button>
-          <button className="btn-primary" onClick={handleSave} disabled={saving}>
+          <button type="submit" className="btn-primary" disabled={saving}>
             {saving ? 'Guardando…' : 'Guardar'}
           </button>
         </div>
+        </form>
       </div>
     </div>
   )

@@ -64,6 +64,14 @@ export const OUTCOMES = {
   },
 }
 
+// Lifecycle stages for a contact.
+export const STAGES = {
+  lead: 'Lead',
+  enrolled: 'Enrolled',
+  disenrolled: 'Disenrolled',
+}
+export const STAGE_ORDER = ['lead', 'enrolled', 'disenrolled']
+
 // Outcomes an agent can log from call mode (everything except the initial "pending").
 export const CALL_OUTCOMES = [
   'interested',

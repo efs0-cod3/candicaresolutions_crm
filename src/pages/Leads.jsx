@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { supabase, OUTCOMES } from '../lib/supabase'
+import { supabase, OUTCOMES, STAGES, STAGE_ORDER } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import LeadModal from '../components/LeadModal'
 
@@ -26,6 +26,14 @@ export default function Leads() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const [segment, setSegment] = useState(() => {
+    const s = localStorage.getItem('leadsSegment')
+    return STAGE_ORDER.includes(s) ? s : 'lead'
+  })
+  function changeSegment(s) {
+    setSegment(s)
+    localStorage.setItem('leadsSegment', s)
+  }
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [sepFilter, setSepFilter] = useState('all')
@@ -61,7 +69,7 @@ export default function Leads() {
     const { data, error } = await supabase
       .from('leads')
       .select(
-        'id, name, phone, birth_date, previous_plan, new_plan, sep, enroll_date, enroll_status, call_status, notes, updated_at, lead_financials(amount, hra)'
+        'id, name, phone, birth_date, stage, previous_plan, new_plan, sep, enroll_date, enroll_status, call_status, notes, updated_at, lead_financials(amount, hra)'
       )
       .order('enroll_date', { ascending: true })
     if (error) setError(error.message)
@@ -79,13 +87,27 @@ export default function Leads() {
     load()
   }, [])
 
+  const stageCounts = useMemo(() => {
+    const c = { lead: 0, enrolled: 0, disenrolled: 0 }
+    leads.forEach((l) => {
+      c[l.stage] = (c[l.stage] || 0) + 1
+    })
+    return c
+  }, [leads])
+
+  // Contacts in the currently selected stage segment.
+  const segmentLeads = useMemo(
+    () => leads.filter((l) => l.stage === segment),
+    [leads, segment]
+  )
+
   const stats = useMemo(() => {
-    const total = leads.length
-    const called = leads.filter((l) => l.call_status !== 'pending').length
-    const interested = leads.filter((l) => l.call_status === 'interested').length
+    const total = segmentLeads.length
+    const called = segmentLeads.filter((l) => l.call_status !== 'pending').length
+    const interested = segmentLeads.filter((l) => l.call_status === 'interested').length
     const rate = called > 0 ? Math.round((interested / called) * 100) : 0
     return { total, called, interested, rate }
-  }, [leads])
+  }, [segmentLeads])
 
   const seps = useMemo(
     () => [...new Set(leads.map((l) => l.sep).filter(Boolean))],
@@ -105,7 +127,7 @@ export default function Leads() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    const rows = leads.filter((l) => {
+    const rows = segmentLeads.filter((l) => {
       const ed = l.enroll_date || ''
       if (statusFilter !== 'all' && l.call_status !== statusFilter) return false
       if (sepFilter !== 'all' && l.sep !== sepFilter) return false
@@ -127,12 +149,12 @@ export default function Leads() {
       }
     })
     return rows
-  }, [leads, search, statusFilter, sepFilter, planFilter, yearFilter, monthFilter, sortBy])
+  }, [segmentLeads, search, statusFilter, sepFilter, planFilter, yearFilter, monthFilter, sortBy])
 
-  // Reset to first page whenever the filter/sort set changes.
+  // Reset to first page whenever the segment/filter/sort set changes.
   useEffect(() => {
     setPage(1)
-  }, [search, statusFilter, sepFilter, planFilter, yearFilter, monthFilter, sortBy])
+  }, [segment, search, statusFilter, sepFilter, planFilter, yearFilter, monthFilter, sortBy])
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage = Math.min(page, pageCount)
@@ -228,7 +250,7 @@ export default function Leads() {
       <div className="stats">
         <div className="stat">
           <div className="num">{stats.total}</div>
-          <div className="lbl">Leads totales</div>
+          <div className="lbl">Total {STAGES[segment]}</div>
         </div>
         <div className="stat">
           <div className="num">{stats.called}</div>
@@ -245,6 +267,19 @@ export default function Leads() {
       </div>
 
       <div className="content">
+        <div className="segments">
+          {STAGE_ORDER.map((s) => (
+            <button
+              key={s}
+              className={`segment ${segment === s ? 'active' : ''}`}
+              onClick={() => changeSegment(s)}
+            >
+              {STAGES[s]}
+              <span className="segment-count">{stageCounts[s] || 0}</span>
+            </button>
+          ))}
+        </div>
+
         {error && <div className="alert alert-error">{error}</div>}
 
         <div className="filters">
