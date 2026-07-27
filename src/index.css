@@ -333,6 +333,52 @@ textarea:focus {
   margin: 0 0 18px;
 }
 
+/* ---------- Stage segments ---------- */
+.segments {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.segments::-webkit-scrollbar {
+  display: none;
+}
+.segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  margin-bottom: -1px;
+}
+.segment:hover {
+  color: var(--ink);
+}
+.segment.active {
+  color: var(--navy-deep);
+  border-bottom-color: var(--amber);
+}
+.segment-count {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--slate-soft);
+  color: var(--slate);
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+.segment.active .segment-count {
+  background: var(--amber-soft);
+  color: #8a5a0e;
+}
+
 /* ---------- Filters ---------- */
 .filters {
   display: flex;

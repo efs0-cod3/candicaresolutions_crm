@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import Papa from 'papaparse'
-import { supabase } from '../lib/supabase'
+import { supabase, STAGES, STAGE_ORDER } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
 // Lead fields we can import into, with Spanish labels and header synonyms
@@ -83,6 +83,7 @@ export default function ImportLeads() {
   const [error, setError] = useState('')
   const [importing, setImporting] = useState(false)
   const [result, setResult] = useState(null)
+  const [defaultStage, setDefaultStage] = useState('lead')
 
   function reset() {
     setFileName('')
@@ -164,6 +165,7 @@ export default function ImportLeads() {
           newRows.push({
             lead: {
               name,
+              stage: defaultStage,
               phone: phone || null,
               birth_date: normDate(val(row, 'birth_date')),
               previous_plan: val(row, 'previous_plan') || null,
@@ -181,7 +183,7 @@ export default function ImportLeads() {
       if (preview.length < 25) preview.push({ name, phone, status })
     })
     return { newRows, duplicates, invalid, preview }
-  }, [rows, mapping, existingKeys])
+  }, [rows, mapping, existingKeys, defaultStage])
 
   async function doImport() {
     if (!analysis.newRows.length) return
@@ -271,6 +273,14 @@ export default function ImportLeads() {
               <button className="btn-secondary" onClick={reset}>Limpiar</button>
             </>
           )}
+        </div>
+        <div style={{ marginTop: 12, maxWidth: 260 }}>
+          <label>Etapa para los importados</label>
+          <select value={defaultStage} onChange={(e) => setDefaultStage(e.target.value)}>
+            {STAGE_ORDER.map((s) => (
+              <option key={s} value={s}>{STAGES[s]}</option>
+            ))}
+          </select>
         </div>
       </div>
 

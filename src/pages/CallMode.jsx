@@ -36,6 +36,7 @@ export default function CallMode() {
       .select(
         'id, name, phone, birth_date, previous_plan, new_plan, sep, enroll_date, enroll_status, call_status, notes, lead_financials(amount, hra)'
       )
+      .eq('stage', 'lead') // only leads are worked in call mode
       .order('enroll_date', { ascending: true })
 
     if (nextScope === 'pending') {
