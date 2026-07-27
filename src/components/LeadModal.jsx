@@ -136,6 +136,12 @@ export default function LeadModal({ lead, onClose, onSaved }) {
 
         {error && <div className="alert alert-error">{error}</div>}
 
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSave()
+          }}
+        >
         <div className="field">
           <label>Nombre</label>
           <input
@@ -236,13 +242,19 @@ export default function LeadModal({ lead, onClose, onSaved }) {
         </div>
 
         <div className="modal-actions">
-          <button className="btn-secondary" onClick={onClose} disabled={saving}>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={onClose}
+            disabled={saving}
+          >
             Cancelar
           </button>
-          <button className="btn-primary" onClick={handleSave} disabled={saving}>
+          <button type="submit" className="btn-primary" disabled={saving}>
             {saving ? 'Guardando…' : 'Guardar'}
           </button>
         </div>
+        </form>
       </div>
     </div>
   )
