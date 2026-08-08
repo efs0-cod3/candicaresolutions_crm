@@ -206,6 +206,20 @@ export default function Leads() {
     )
   }
 
+  // Leads show the editable call-status pill; enrolled/disenrolled show the
+  // enrollment date instead (call status isn't relevant once enrolled).
+  function StatusCell({ l }) {
+    if (segment === 'lead') return <StatusSelect l={l} />
+    return (
+      <span
+        className="badge"
+        style={{ background: 'var(--slate-soft)', color: 'var(--slate)' }}
+      >
+        📅 {fmtDate(l.enroll_date)}
+      </span>
+    )
+  }
+
   function Actions({ l }) {
     return (
       <div className="row-actions">
@@ -366,9 +380,9 @@ export default function Leads() {
                     ) : (
                       <div />
                     )}
-                    <div><StatusSelect l={l} /></div>
+                    <div><StatusCell l={l} /></div>
                     <Actions l={l} />
-                    {l.call_status === 'interested' && l.notes && (
+                    {segment === 'lead' && l.call_status === 'interested' && l.notes && (
                       <div className="lead-note">
                         <span className="lead-note-tag">Interesado</span>
                         {l.notes}
@@ -398,8 +412,8 @@ export default function Leads() {
                         </div>
                       )}
                     </div>
-                    <StatusSelect l={l} />
-                    {l.call_status === 'interested' && l.notes && (
+                    <StatusCell l={l} />
+                    {segment === 'lead' && l.call_status === 'interested' && l.notes && (
                       <div className="lead-note" style={{ marginTop: 10 }}>
                         <span className="lead-note-tag">Interesado</span>
                         {l.notes}
