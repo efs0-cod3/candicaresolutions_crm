@@ -1,9 +1,11 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../i18n'
 import NotificationBell from './NotificationBell'
 
 export default function Layout() {
   const { profile, user, isAdmin, signOut } = useAuth()
+  const { lang, setLang, t } = useLang()
   const displayName = profile?.full_name || user?.email || 'Agente'
 
   const tabs = [
@@ -24,31 +26,45 @@ export default function Layout() {
     <>
       <header className="topbar">
         <div>
-          <div className="eyebrow">Seguimiento de afiliaciones</div>
+          <div className="eyebrow">{t('Seguimiento de afiliaciones')}</div>
           <h1 className="display">Central de Llamadas</h1>
         </div>
         <div className="topbar-right">
           <nav className="tabs">
-            {tabs.map((t) => (
+            {tabs.map((tb) => (
               <NavLink
-                key={t.to}
-                to={t.to}
+                key={tb.to}
+                to={tb.to}
                 className={({ isActive }) =>
                   `tab-btn ${isActive ? 'active' : ''}`
                 }
               >
-                {t.label}
+                {t(tb.label)}
               </NavLink>
             ))}
           </nav>
           <NotificationBell />
+          <div className="lang-toggle">
+            <button
+              className={lang === 'es' ? 'active' : ''}
+              onClick={() => setLang('es')}
+            >
+              ES
+            </button>
+            <button
+              className={lang === 'en' ? 'active' : ''}
+              onClick={() => setLang('en')}
+            >
+              EN
+            </button>
+          </div>
           <div className="topbar-user">
             <div>
               <div className="u-name">{displayName}</div>
               <div className="u-role">{profile?.role || 'agent'}</div>
             </div>
             <button className="signout-btn" onClick={signOut}>
-              Salir
+              {t('Salir')}
             </button>
           </div>
         </div>

@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase, OUTCOMES } from '../lib/supabase'
+import { useLang } from '../i18n'
 
 export default function Dashboard() {
+  const { t } = useLang()
   const [leads, setLeads] = useState([])
   const [activity, setActivity] = useState([])
   const [profiles, setProfiles] = useState([])
@@ -12,7 +14,7 @@ export default function Dashboard() {
     ;(async () => {
       setLoading(true)
       const [leadsRes, actRes, profRes] = await Promise.all([
-        supabase.from('leads').select('id, call_status, name, birth_date, phone'),
+        supabase.from('leads').select('id, call_status, stage, name, birth_date, phone'),
         supabase
           .from('call_activity')
           .select('id, lead_id, agent_id, outcome, created_at')
@@ -43,9 +45,11 @@ export default function Dashboard() {
   }, [leads])
 
   const stats = useMemo(() => {
-    const total = leads.length
+    // Call-workflow metrics only apply to leads (not enrolled/disenrolled).
+    const leadRows = leads.filter((l) => l.stage === 'lead')
+    const total = leadRows.length
     const byStatus = {}
-    leads.forEach((l) => {
+    leadRows.forEach((l) => {
       byStatus[l.call_status] = (byStatus[l.call_status] || 0) + 1
     })
     const contacted = total - (byStatus.pending || 0)
@@ -88,25 +92,25 @@ export default function Dashboard() {
       <div className="stats">
         <div className="stat">
           <div className="num">{stats.conversion.toFixed(1)}%</div>
-          <div className="lbl">Tasa de conversión</div>
+          <div className="lbl">{t('Tasa de conversión')}</div>
         </div>
         <div className="stat">
           <div className="num">{stats.total}</div>
-          <div className="lbl">Leads totales</div>
+          <div className="lbl">{t('Leads totales')}</div>
         </div>
         <div className="stat">
           <div className="num">{stats.contacted}</div>
-          <div className="lbl">Contactados</div>
+          <div className="lbl">{t('Contactados')}</div>
         </div>
         <div className="stat">
           <div className="num">{activity.length}</div>
-          <div className="lbl">Llamadas registradas</div>
+          <div className="lbl">{t('Llamadas registradas')}</div>
         </div>
       </div>
 
       <div className="content">
-        <h2 className="page-heading">Panel del equipo</h2>
-        <p className="page-note">Desempeño sobre todos los contactos</p>
+        <h2 className="page-heading">{t('Panel del equipo')}</h2>
+        <p className="page-note">{t('Desempeño sobre todos los contactos')}</p>
 
         {error && <div className="alert alert-error">{error}</div>}
         {loading ? (
@@ -114,9 +118,9 @@ export default function Dashboard() {
         ) : (
           <div className="panel-grid">
             <div className="card birthday-card" style={{ gridColumn: '1 / -1' }}>
-              <h3 className="card-title">🎂 Cumpleaños de hoy ({birthdays.length})</h3>
+              <h3 className="card-title">{t('🎂 Cumpleaños de hoy ({n})', { n: birthdays.length })}</h3>
               {birthdays.length === 0 ? (
-                <p className="muted">Nadie cumple años hoy.</p>
+                <p className="muted">{t('Nadie cumple años hoy.')}</p>
               ) : (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {birthdays.map((b) => (
@@ -137,11 +141,11 @@ export default function Dashboard() {
             </div>
 
             <div className="card">
-              <h3 className="card-title">Leads por estado</h3>
+              <h3 className="card-title">{t('Leads por estado')}</h3>
               {outcomeBars.map(({ key, meta, count, pct }) => (
                 <div className="bar-row" key={key}>
                   <div className="bar-label" style={{ color: meta.color }}>
-                    {meta.label}
+                    {t(meta.label)}
                   </div>
                   <div className="bar-track">
                     <div
@@ -155,18 +159,18 @@ export default function Dashboard() {
             </div>
 
             <div className="card">
-              <h3 className="card-title">Ranking de agentes</h3>
+              <h3 className="card-title">{t('Ranking de agentes')}</h3>
               {agentRows.length === 0 ? (
-                <p className="muted">Aún no hay llamadas registradas.</p>
+                <p className="muted">{t('Aún no hay llamadas registradas.')}</p>
               ) : (
                 <table className="mini-table">
                   <thead>
                     <tr>
-                      <th>Agente</th>
-                      <th>Llamadas</th>
-                      <th>Leads</th>
-                      <th>Interesados</th>
-                      <th>Tasa</th>
+                      <th>{t('Agente')}</th>
+                      <th>{t('Llamadas')}</th>
+                      <th>{t('Leads')}</th>
+                      <th>{t('Interesados')}</th>
+                      <th>{t('Tasa')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -187,16 +191,16 @@ export default function Dashboard() {
             </div>
 
             <div className="card" style={{ gridColumn: '1 / -1' }}>
-              <h3 className="card-title">Actividad reciente</h3>
+              <h3 className="card-title">{t('Actividad reciente')}</h3>
               {activity.length === 0 ? (
-                <p className="muted">Sin actividad de llamadas todavía.</p>
+                <p className="muted">{t('Sin actividad de llamadas todavía.')}</p>
               ) : (
                 <table className="mini-table">
                   <thead>
                     <tr>
-                      <th>Cuándo</th>
-                      <th>Agente</th>
-                      <th>Resultado</th>
+                      <th>{t('Cuándo')}</th>
+                      <th>{t('Agente')}</th>
+                      <th>{t('Resultado')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -208,14 +212,14 @@ export default function Dashboard() {
                             {new Date(a.created_at).toLocaleString()}
                           </td>
                           <td>
-                            {profileMap[a.agent_id]?.full_name || 'Desconocido'}
+                            {profileMap[a.agent_id]?.full_name || t('Desconocido')}
                           </td>
                           <td>
                             <span
                               className="badge"
                               style={{ background: m.pillBg, color: m.color }}
                             >
-                              {m.label}
+                              {t(m.label)}
                             </span>
                           </td>
                         </tr>

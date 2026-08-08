@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../i18n'
 
 export default function Login() {
   const { session, loading: authLoading } = useAuth()
+  const { t } = useLang()
   const [mode, setMode] = useState('signin') // 'signin' | 'signup'
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -38,13 +40,13 @@ export default function Login() {
         if (error) throw error
         if (!data.session) {
           setInfo(
-            'Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.'
+            t('Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.')
           )
           setMode('signin')
         }
       }
     } catch (err) {
-      setError(traducirError(err.message))
+      setError(t(traducirError(err.message)))
     } finally {
       setLoading(false)
     }
@@ -53,12 +55,12 @@ export default function Login() {
   return (
     <div className="auth-wrap">
       <div className="auth-card">
-        <div className="auth-eyebrow">Seguimiento de afiliaciones</div>
+        <div className="auth-eyebrow">{t('Seguimiento de afiliaciones')}</div>
         <h1 className="auth-title display">Central de Llamadas</h1>
         <p className="auth-sub">
           {mode === 'signin'
-            ? 'Inicia sesión para trabajar tus contactos.'
-            : 'Solo puedes registrarte si un administrador invitó tu correo.'}
+            ? t('Inicia sesión para trabajar tus contactos.')
+            : t('Solo puedes registrarte si un administrador invitó tu correo.')}
         </p>
 
         {error && <div className="alert alert-error">{error}</div>}
@@ -67,7 +69,7 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           {mode === 'signup' && (
             <div className="field">
-              <label htmlFor="fullName">Nombre completo</label>
+              <label htmlFor="fullName">{t('Nombre completo')}</label>
               <input
                 id="fullName"
                 type="text"
@@ -80,7 +82,7 @@ export default function Login() {
             </div>
           )}
           <div className="field">
-            <label htmlFor="email">Correo</label>
+            <label htmlFor="email">{t('Correo')}</label>
             <input
               id="email"
               type="email"
@@ -92,7 +94,7 @@ export default function Login() {
             />
           </div>
           <div className="field">
-            <label htmlFor="password">Contraseña</label>
+            <label htmlFor="password">{t('Contraseña')}</label>
             <input
               id="password"
               type="password"
@@ -113,17 +115,17 @@ export default function Login() {
             disabled={loading}
           >
             {loading
-              ? 'Un momento…'
+              ? t('Un momento…')
               : mode === 'signin'
-                ? 'Iniciar sesión'
-                : 'Crear cuenta'}
+                ? t('Iniciar sesión')
+                : t('Crear cuenta')}
           </button>
         </form>
 
         <div className="auth-toggle">
           {mode === 'signin' ? (
             <>
-              ¿Tienes una invitación?{' '}
+              {t('¿Tienes una invitación?')}{' '}
               <button
                 type="button"
                 onClick={() => {
@@ -132,12 +134,12 @@ export default function Login() {
                   setInfo('')
                 }}
               >
-                Crea tu cuenta
+                {t('Crea tu cuenta')}
               </button>
             </>
           ) : (
             <>
-              ¿Ya tienes cuenta?{' '}
+              {t('¿Ya tienes cuenta?')}{' '}
               <button
                 type="button"
                 onClick={() => {
@@ -146,7 +148,7 @@ export default function Login() {
                   setInfo('')
                 }}
               >
-                Inicia sesión
+                {t('Iniciar sesión')}
               </button>
             </>
           )}
