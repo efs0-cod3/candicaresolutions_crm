@@ -14,7 +14,7 @@ export default function Dashboard() {
     ;(async () => {
       setLoading(true)
       const [leadsRes, actRes, profRes] = await Promise.all([
-        supabase.from('leads').select('id, call_status, name, birth_date, phone'),
+        supabase.from('leads').select('id, call_status, stage, name, birth_date, phone'),
         supabase
           .from('call_activity')
           .select('id, lead_id, agent_id, outcome, created_at')
@@ -45,9 +45,11 @@ export default function Dashboard() {
   }, [leads])
 
   const stats = useMemo(() => {
-    const total = leads.length
+    // Call-workflow metrics only apply to leads (not enrolled/disenrolled).
+    const leadRows = leads.filter((l) => l.stage === 'lead')
+    const total = leadRows.length
     const byStatus = {}
-    leads.forEach((l) => {
+    leadRows.forEach((l) => {
       byStatus[l.call_status] = (byStatus[l.call_status] || 0) + 1
     })
     const contacted = total - (byStatus.pending || 0)
