@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTaskReminders } from '../hooks/useTaskReminders'
+import { useLang } from '../i18n'
 
 function fmtDate(d) {
   if (!d) return ''
@@ -10,6 +11,7 @@ function fmtDate(d) {
 
 export default function NotificationBell() {
   const { overdue, dueToday, actionable } = useTaskReminders()
+  const { t } = useLang()
   const [open, setOpen] = useState(false)
   const [perm, setPerm] = useState(
     typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
@@ -43,7 +45,7 @@ export default function NotificationBell() {
       <button
         className="bell-btn"
         onClick={() => setOpen((o) => !o)}
-        title="Notificaciones de tareas"
+        title={t('Notificaciones de tareas')}
       >
         <svg
           width="19"
@@ -64,40 +66,40 @@ export default function NotificationBell() {
 
       {open && (
         <div className="bell-menu">
-          <div className="bell-head">Recordatorios de tareas</div>
+          <div className="bell-head">{t('Recordatorios de tareas')}</div>
 
           {count === 0 ? (
-            <div className="bell-empty">Sin tareas vencidas o para hoy 🎉</div>
+            <div className="bell-empty">{t('Sin tareas vencidas o para hoy 🎉')}</div>
           ) : (
             <div className="bell-list">
-              {overdue.map((t) => (
-                <button key={t.id} className="bell-item" onClick={go}>
-                  <span className="bell-tag overdue">Vencida</span>
-                  <span className="bell-title">{t.title}</span>
-                  <span className="bell-date">{fmtDate(t.due_date)}</span>
+              {overdue.map((task) => (
+                <button key={task.id} className="bell-item" onClick={go}>
+                  <span className="bell-tag overdue">{t('Vencida')}</span>
+                  <span className="bell-title">{task.title}</span>
+                  <span className="bell-date">{fmtDate(task.due_date)}</span>
                 </button>
               ))}
-              {dueToday.map((t) => (
-                <button key={t.id} className="bell-item" onClick={go}>
-                  <span className="bell-tag today">Hoy</span>
-                  <span className="bell-title">{t.title}</span>
+              {dueToday.map((task) => (
+                <button key={task.id} className="bell-item" onClick={go}>
+                  <span className="bell-tag today">{t('Hoy')}</span>
+                  <span className="bell-title">{task.title}</span>
                 </button>
               ))}
             </div>
           )}
 
           <button className="bell-foot" onClick={go}>
-            Ver todas las tareas →
+            {t('Ver todas las tareas →')}
           </button>
 
           {perm === 'default' && (
             <button className="bell-enable" onClick={enableNotifications}>
-              Activar notificaciones del navegador
+              {t('Activar notificaciones del navegador')}
             </button>
           )}
           {perm === 'denied' && (
             <div className="bell-denied">
-              Notificaciones del navegador bloqueadas (actívalas en el navegador).
+              {t('Notificaciones del navegador bloqueadas (actívalas en el navegador).')}
             </div>
           )}
         </div>

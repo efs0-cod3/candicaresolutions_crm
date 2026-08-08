@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase, OUTCOMES } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../i18n'
 
 function money(v) {
   if (v === null || v === undefined || v === '') return '—'
@@ -19,6 +20,7 @@ const TERMINAL = ['interested', 'notinterested']
 
 export default function CallMode() {
   const { user, isAdmin } = useAuth()
+  const { t } = useLang()
   const [queue, setQueue] = useState([])
   const [index, setIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -127,9 +129,9 @@ export default function CallMode() {
           style={{ justifyContent: 'space-between', marginBottom: 6 }}
         >
           <div>
-            <h2 className="page-heading">Modo Llamada</h2>
+            <h2 className="page-heading">{t('Modo Llamada')}</h2>
             <p className="page-note" style={{ margin: 0 }}>
-              Un contacto a la vez · {worked} registrados en esta sesión
+              {t('Un contacto a la vez · {n} registrados en esta sesión', { n: worked })}
             </p>
           </div>
           <select
@@ -137,8 +139,8 @@ export default function CallMode() {
             value={scope}
             onChange={(e) => changeScope(e.target.value)}
           >
-            <option value="pending">Solo pendientes</option>
-            <option value="open">Todos los abiertos (con seguimiento)</option>
+            <option value="pending">{t('Solo pendientes')}</option>
+            <option value="open">{t('Todos los abiertos (con seguimiento)')}</option>
           </select>
         </div>
 
@@ -149,18 +151,18 @@ export default function CallMode() {
         ) : done ? (
           <div className="call-wrap">
             <div className="call-card call-done">
-              <div className="display">¡Terminaste la ronda! 🎉</div>
+              <div className="display">{t('¡Terminaste la ronda! 🎉')}</div>
               <div className="muted" style={{ fontSize: 13.5, marginBottom: 20 }}>
                 {worked > 0
-                  ? `Trabajaste ${worked} contacto${worked === 1 ? '' : 's'} en esta sesión.`
-                  : 'No quedan contactos en esta cola.'}
+                  ? t('Trabajaste {n} en esta sesión.', { n: worked })
+                  : t('No quedan contactos en esta cola.')}
               </div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
                 <button className="btn-secondary" onClick={() => loadQueue()}>
-                  Recargar cola
+                  {t('Recargar cola')}
                 </button>
                 <Link to="/dashboard" className="btn-primary">
-                  Ver panel
+                  {t('Ver panel')}
                 </Link>
               </div>
             </div>
@@ -169,7 +171,7 @@ export default function CallMode() {
           <div className="call-wrap">
             <div className="call-card">
               <div className="call-progress">
-                Contacto {index + 1} de {queue.length}
+                {t('Contacto')} {index + 1} {t('de')} {queue.length}
               </div>
               <div className="call-name display">{current.name}</div>
               <div className="call-sep">
@@ -185,30 +187,30 @@ export default function CallMode() {
                 </a>
               ) : (
                 <div className="call-phone call-phone--empty">
-                  Sin teléfono registrado
+                  {t('Sin teléfono')}
                 </div>
               )}
 
               <div className="call-facts">
                 <div>
-                  <div className="fact-lbl">Plan anterior</div>
+                  <div className="fact-lbl">{t('Plan anterior')}</div>
                   <div className="fact-val">{current.previous_plan || '—'}</div>
                 </div>
                 <div>
-                  <div className="fact-lbl">Plan nuevo</div>
+                  <div className="fact-lbl">{t('Plan nuevo')}</div>
                   <div className="fact-val">{current.new_plan || '—'}</div>
                 </div>
                 <div>
-                  <div className="fact-lbl">Afiliación</div>
+                  <div className="fact-lbl">{t('Afiliación')}</div>
                   <div className="fact-val">{fmtDate(current.enroll_date)}</div>
                 </div>
                 <div>
-                  <div className="fact-lbl">Nacimiento</div>
+                  <div className="fact-lbl">{t('Nacimiento')}</div>
                   <div className="fact-val">{fmtDate(current.birth_date)}</div>
                 </div>
                 {isAdmin && (
                   <div>
-                    <div className="fact-lbl">Monto / HRA</div>
+                    <div className="fact-lbl">{t('Monto')} / HRA</div>
                     <div className="fact-val">
                       {money(current.amount)} · {money(current.hra)}
                     </div>
@@ -218,7 +220,7 @@ export default function CallMode() {
 
               <div className="call-notes">
                 <textarea
-                  placeholder="Notas de la llamada…"
+                  placeholder={t('Notas de la llamada…')}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                 />
@@ -239,7 +241,7 @@ export default function CallMode() {
                         gridColumn: key === 'voicemail' ? 'span 2' : undefined,
                       }}
                     >
-                      {m.label}
+                      {t(m.label)}
                     </button>
                   )
                 })}
@@ -250,7 +252,7 @@ export default function CallMode() {
                 onClick={() => setIndex((i) => i + 1)}
                 disabled={saving}
               >
-                Saltar por ahora →
+                {t('Saltar por ahora →')}
               </button>
             </div>
           </div>

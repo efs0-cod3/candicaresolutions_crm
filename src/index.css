@@ -258,6 +258,25 @@ textarea:focus {
   color: var(--ink-soft);
 }
 
+.lang-toggle {
+  display: inline-flex;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.lang-toggle button {
+  border: none;
+  background: transparent;
+  color: #d9e4df;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.lang-toggle button.active {
+  background: var(--amber);
+  color: #2a1b04;
+}
+
 .topbar-user {
   display: flex;
   align-items: center;
@@ -331,6 +350,19 @@ textarea:focus {
   color: var(--ink-soft);
   font-size: 13px;
   margin: 0 0 18px;
+}
+
+.enroll-cell .enroll-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-faint, #94a3b8);
+  font-weight: 700;
+}
+.enroll-cell .enroll-value {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 1px;
 }
 
 /* ---------- Stage segments ---------- */

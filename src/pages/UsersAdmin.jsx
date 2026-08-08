@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../i18n'
 
 function fmtDate(v) {
   return v ? new Date(v).toLocaleDateString() : '—'
@@ -9,6 +10,7 @@ function fmtDate(v) {
 
 export default function UsersAdmin() {
   const { user, isAdmin, loading: authLoading } = useAuth()
+  const { t } = useLang()
   const [invites, setInvites] = useState([])
   const [team, setTeam] = useState([])
   const [loading, setLoading] = useState(true)
@@ -46,7 +48,7 @@ export default function UsersAdmin() {
     setOk('')
     const clean = email.trim().toLowerCase()
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) {
-      setError('Correo no válido.')
+      setError(t('Correo no válido.'))
       return
     }
     setInviting(true)
@@ -57,12 +59,12 @@ export default function UsersAdmin() {
     if (error) {
       setError(
         error.message.includes('duplicate')
-          ? 'Ese correo ya estaba invitado.'
+          ? t('Ese correo ya estaba invitado.')
           : error.message
       )
       return
     }
-    setOk(`Invitación creada para ${clean}. Ya puede registrarse con ese correo.`)
+    setOk(t('Invitación creada para {email}. Ya puede registrarse con ese correo.', { email: clean }))
     setEmail('')
     load()
   }
@@ -93,17 +95,16 @@ export default function UsersAdmin() {
 
   return (
     <div className="content">
-      <h2 className="page-heading">Usuarios</h2>
+      <h2 className="page-heading">{t('Usuarios')}</h2>
       <p className="page-note">
-        El registro es <b>solo por invitación</b>. Autoriza un correo aquí y esa
-        persona podrá crear su cuenta; nadie más puede registrarse.
+        {t('El registro es solo por invitación. Autoriza un correo aquí y esa persona podrá crear su cuenta; nadie más puede registrarse.')}
       </p>
 
       {error && <div className="alert alert-error">{error}</div>}
       {ok && <div className="alert alert-success">{ok}</div>}
 
       <div className="card" style={{ marginBottom: 16 }}>
-        <h3 className="card-title">Invitar a un usuario</h3>
+        <h3 className="card-title">{t('Invitar a un usuario')}</h3>
         <form onSubmit={invite} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <input
             type="email"
@@ -113,14 +114,14 @@ export default function UsersAdmin() {
             style={{ flex: '1 1 240px' }}
           />
           <button className="add-btn" type="submit" disabled={inviting}>
-            {inviting ? 'Invitando…' : 'Invitar'}
+            {inviting ? t('Invitando…') : t('Invitar')}
           </button>
           <button type="button" className="btn-secondary" onClick={copyLink}>
-            {copied ? '¡Enlace copiado!' : 'Copiar enlace de registro'}
+            {copied ? t('¡Enlace copiado!') : t('Copiar enlace de registro')}
           </button>
         </form>
         <p className="muted" style={{ fontSize: 12.5, marginTop: 10, marginBottom: 0 }}>
-          Pásale a la persona el enlace de la app; se registra con el correo que autorizaste.
+          {t('Pásale a la persona el enlace de la app; se registra con el correo que autorizaste.')}
         </p>
       </div>
 
@@ -129,15 +130,15 @@ export default function UsersAdmin() {
       ) : (
         <div className="panel-grid">
           <div className="card">
-            <h3 className="card-title">Invitaciones pendientes ({pending.length})</h3>
+            <h3 className="card-title">{t('Invitaciones pendientes ({n})', { n: pending.length })}</h3>
             {pending.length === 0 ? (
-              <p className="muted">No hay invitaciones pendientes.</p>
+              <p className="muted">{t('No hay invitaciones pendientes.')}</p>
             ) : (
               <table className="mini-table">
                 <thead>
                   <tr>
-                    <th>Correo</th>
-                    <th>Invitado</th>
+                    <th>{t('Correo')}</th>
+                    <th>{t('Invitado')}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -149,7 +150,7 @@ export default function UsersAdmin() {
                       <td style={{ textAlign: 'right' }}>
                         <button
                           className="icon-btn danger"
-                          title="Revocar invitación"
+                          title={t('Revocar invitación')}
                           onClick={() => removeInvite(i.email)}
                         >
                           ✕
@@ -163,33 +164,33 @@ export default function UsersAdmin() {
           </div>
 
           <div className="card">
-            <h3 className="card-title">Equipo ({team.length})</h3>
+            <h3 className="card-title">{t('Equipo ({n})', { n: team.length })}</h3>
             {team.length === 0 ? (
-              <p className="muted">Sin usuarios todavía.</p>
+              <p className="muted">{t('Sin usuarios todavía.')}</p>
             ) : (
               <table className="mini-table">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Rol</th>
+                    <th>{t('Nombre')}</th>
+                    <th>{t('Rol')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {team.map((t) => (
-                    <tr key={t.id}>
+                  {team.map((member) => (
+                    <tr key={member.id}>
                       <td style={{ fontWeight: 600 }}>
-                        {t.full_name}
-                        {t.id === user.id && <span className="muted"> (tú)</span>}
+                        {member.full_name}
+                        {member.id === user.id && <span className="muted"> {t('(tú)')}</span>}
                       </td>
                       <td>
                         <select
-                          value={t.role}
-                          onChange={(e) => setRole(t.id, e.target.value)}
+                          value={member.role}
+                          onChange={(e) => setRole(member.id, e.target.value)}
                           style={{ width: 'auto', minWidth: 110 }}
-                          disabled={t.id === user.id}
+                          disabled={member.id === user.id}
                         >
-                          <option value="agent">Agente</option>
-                          <option value="admin">Admin</option>
+                          <option value="agent">{t('Agente')}</option>
+                          <option value="admin">{t('Admin')}</option>
                         </select>
                       </td>
                     </tr>
@@ -201,7 +202,7 @@ export default function UsersAdmin() {
 
           {accepted.length > 0 && (
             <div className="card" style={{ gridColumn: '1 / -1' }}>
-              <h3 className="card-title">Invitaciones ya usadas ({accepted.length})</h3>
+              <h3 className="card-title">{t('Invitaciones ya usadas ({n})', { n: accepted.length })}</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {accepted.map((i) => (
                   <span key={i.email} className="badge" style={{ background: '#dff3e6', color: '#1b7a44' }}>

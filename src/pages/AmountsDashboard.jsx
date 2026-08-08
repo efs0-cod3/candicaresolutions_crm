@@ -2,23 +2,20 @@ import { useEffect, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-
-const MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-]
+import { useLang, monthName } from '../i18n'
 
 function money(v) {
   return '$' + Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
-function monthLabel(key) {
-  if (key === 'unknown') return 'Sin fecha'
+function monthLabel(key, lang, t) {
+  if (key === 'unknown') return t('Sin fecha')
   const [y, m] = key.split('-')
-  return `${MONTHS[Number(m) - 1]} ${y}`
+  return `${monthName(Number(m) - 1, lang)} ${y}`
 }
 
 export default function AmountsDashboard() {
   const { isAdmin, loading: authLoading } = useAuth()
+  const { t, lang } = useLang()
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -100,26 +97,26 @@ export default function AmountsDashboard() {
       <div className="stats">
         <div className="stat">
           <div className="num">{money(totals.amount)}</div>
-          <div className="lbl">Monto total</div>
+          <div className="lbl">{t('Monto total')}</div>
         </div>
         <div className="stat">
           <div className="num">{money(totals.hra)}</div>
-          <div className="lbl">HRA total</div>
+          <div className="lbl">{t('HRA total')}</div>
         </div>
         <div className="stat">
           <div className="num">{totals.count}</div>
-          <div className="lbl">Usuarios ingresados</div>
+          <div className="lbl">{t('Usuarios ingresados')}</div>
         </div>
         <div className="stat">
           <div className="num">{months.filter((m) => m.key !== 'unknown').length}</div>
-          <div className="lbl">Meses con producción</div>
+          <div className="lbl">{t('Meses con producción')}</div>
         </div>
       </div>
 
       <div className="content">
-        <h2 className="page-heading">Ingresos por mes</h2>
+        <h2 className="page-heading">{t('Ingresos por mes')}</h2>
         <p className="page-note">
-          Usuarios ingresados y montos generados, agrupados por mes de afiliación · solo administradores
+          {t('Usuarios ingresados y montos generados, agrupados por mes de afiliación · solo administradores')}
         </p>
 
         {error && <div className="alert alert-error">{error}</div>}
@@ -130,7 +127,7 @@ export default function AmountsDashboard() {
             value={yearFilter}
             onChange={(e) => setYearFilter(e.target.value)}
           >
-            <option value="all">Todos los años</option>
+            <option value="all">{t('Todos los años')}</option>
             {years.map((y) => (
               <option key={y} value={y}>{y}</option>
             ))}
@@ -140,7 +137,7 @@ export default function AmountsDashboard() {
             value={planFilter}
             onChange={(e) => setPlanFilter(e.target.value)}
           >
-            <option value="all">Todos los planes</option>
+            <option value="all">{t('Todos los planes')}</option>
             {plans.map((p) => (
               <option key={p} value={p}>{p}</option>
             ))}
@@ -150,16 +147,16 @@ export default function AmountsDashboard() {
         {loading ? (
           <div className="spinner" />
         ) : months.length === 0 ? (
-          <div className="empty">No hay ingresos que coincidan con los filtros.</div>
+          <div className="empty">{t('No hay ingresos que coincidan con los filtros.')}</div>
         ) : (
           <div className="card">
             <table className="mini-table">
               <thead>
                 <tr>
                   <th></th>
-                  <th>Mes</th>
-                  <th>Usuarios</th>
-                  <th style={{ textAlign: 'right' }}>Monto</th>
+                  <th>{t('Mes')}</th>
+                  <th>{t('Usuarios')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('Monto')}</th>
                   <th style={{ textAlign: 'right' }}>HRA</th>
                   <th style={{ width: '25%' }}></th>
                 </tr>
@@ -172,13 +169,15 @@ export default function AmountsDashboard() {
                     open={expanded === m.key}
                     onToggle={() => setExpanded(expanded === m.key ? null : m.key)}
                     maxAmount={maxAmount}
+                    t={t}
+                    lang={lang}
                   />
                 ))}
               </tbody>
               <tfoot>
                 <tr>
                   <td></td>
-                  <td style={{ fontWeight: 700 }}>Total</td>
+                  <td style={{ fontWeight: 700 }}>{t('Total')}</td>
                   <td style={{ fontWeight: 700 }}>{totals.count}</td>
                   <td style={{ textAlign: 'right', fontWeight: 800, color: 'var(--navy-deep)' }}>
                     {money(totals.amount)}
@@ -195,12 +194,12 @@ export default function AmountsDashboard() {
   )
 }
 
-function MonthRow({ m, open, onToggle, maxAmount }) {
+function MonthRow({ m, open, onToggle, maxAmount, t, lang }) {
   return (
     <>
       <tr onClick={onToggle} style={{ cursor: 'pointer' }}>
         <td style={{ width: 24, color: 'var(--ink-soft)' }}>{open ? '▾' : '▸'}</td>
-        <td style={{ fontWeight: 600 }}>{monthLabel(m.key)}</td>
+        <td style={{ fontWeight: 600 }}>{monthLabel(m.key, lang, t)}</td>
         <td>{m.count}</td>
         <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--navy)' }}>
           {money(m.amount)}
@@ -221,9 +220,9 @@ function MonthRow({ m, open, onToggle, maxAmount }) {
             <table className="mini-table" style={{ background: 'transparent' }}>
               <thead>
                 <tr>
-                  <th>Usuario</th>
-                  <th>Plan</th>
-                  <th style={{ textAlign: 'right' }}>Monto</th>
+                  <th>{t('Usuario')}</th>
+                  <th>{t('Plan')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('Monto')}</th>
                   <th style={{ textAlign: 'right' }}>HRA</th>
                 </tr>
               </thead>

@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import Papa from 'papaparse'
 import { supabase, STAGES, STAGE_ORDER } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../i18n'
 
 // Lead fields we can import into, with Spanish labels and header synonyms
 // used to auto-guess the mapping from the CSV's own column names.
@@ -74,6 +75,7 @@ function dedupeKey(name, phone) {
 
 export default function ImportLeads() {
   const { isAdmin, loading: authLoading } = useAuth()
+  const { t } = useLang()
   const fileInput = useRef(null)
   const [fileName, setFileName] = useState('')
   const [headers, setHeaders] = useState([])
@@ -242,19 +244,19 @@ export default function ImportLeads() {
 
   return (
     <div className="content">
-      <h2 className="page-heading">Importar contactos</h2>
+      <h2 className="page-heading">{t('Importar contactos')}</h2>
       <p className="page-note">
-        Sube un CSV de tu base. Mapea tus columnas a los campos del CRM; los
-        repetidos (dentro del archivo y contra los contactos ya cargados) se
-        omiten automáticamente.
+        {t('Sube un CSV de tu base. Mapea tus columnas a los campos del CRM; los repetidos (dentro del archivo y contra los contactos ya cargados) se omiten automáticamente.')}
       </p>
 
       {error && <div className="alert alert-error">{error}</div>}
       {result && (
         <div className="alert alert-success">
-          Importados <b>{result.inserted}</b> contactos nuevos ·{' '}
-          {result.duplicates} repetidos omitidos · {result.invalid} sin nombre
-          descartados.
+          {t('Importados {a} nuevos · {b} repetidos omitidos · {c} sin nombre descartados.', {
+            a: result.inserted,
+            b: result.duplicates,
+            c: result.invalid,
+          })}
         </div>
       )}
 
@@ -269,13 +271,13 @@ export default function ImportLeads() {
           />
           {fileName && (
             <>
-              <span className="muted" style={{ fontSize: 13 }}>{fileName} · {rows.length} filas</span>
-              <button className="btn-secondary" onClick={reset}>Limpiar</button>
+              <span className="muted" style={{ fontSize: 13 }}>{fileName} · {rows.length}</span>
+              <button className="btn-secondary" onClick={reset}>{t('Limpiar')}</button>
             </>
           )}
         </div>
         <div style={{ marginTop: 12, maxWidth: 260 }}>
-          <label>Etapa para los importados</label>
+          <label>{t('Etapa para los importados')}</label>
           <select value={defaultStage} onChange={(e) => setDefaultStage(e.target.value)}>
             {STAGE_ORDER.map((s) => (
               <option key={s} value={s}>{STAGES[s]}</option>
@@ -287,7 +289,7 @@ export default function ImportLeads() {
       {headers.length > 0 && (
         <>
           <div className="card" style={{ marginBottom: 16 }}>
-            <h3 className="card-title">Mapeo de columnas</h3>
+            <h3 className="card-title">{t('Mapeo de columnas')}</h3>
             <div
               style={{
                 display: 'grid',
@@ -298,7 +300,7 @@ export default function ImportLeads() {
               {FIELDS.map((f) => (
                 <div key={f.key}>
                   <label>
-                    {f.label}
+                    {t(f.label)}
                     {f.required && <span style={{ color: 'var(--brick)' }}> *</span>}
                     {f.adminOnly && <span className="muted"> (admin)</span>}
                   </label>
@@ -308,7 +310,7 @@ export default function ImportLeads() {
                       setMapping((m) => ({ ...m, [f.key]: e.target.value }))
                     }
                   >
-                    <option value="">— No importar —</option>
+                    <option value="">{t('— No importar —')}</option>
                     {headers.map((h) => (
                       <option key={h} value={h}>{h}</option>
                     ))}
@@ -318,7 +320,7 @@ export default function ImportLeads() {
             </div>
             {!mapping.name && (
               <p className="alert alert-error" style={{ marginTop: 12 }}>
-                Debes mapear la columna de <b>Nombre</b> para poder importar.
+                {t('Debes mapear la columna de Nombre para poder importar.')}
               </p>
             )}
           </div>
@@ -326,19 +328,19 @@ export default function ImportLeads() {
           <div className="stats" style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--line)' }}>
             <div className="stat">
               <div className="num" style={{ color: '#1b7a44' }}>{analysis.newRows.length}</div>
-              <div className="lbl">Nuevos a importar</div>
+              <div className="lbl">{t('Nuevos a importar')}</div>
             </div>
             <div className="stat">
               <div className="num" style={{ color: 'var(--ink-soft)' }}>{analysis.duplicates}</div>
-              <div className="lbl">Repetidos (omitidos)</div>
+              <div className="lbl">{t('Repetidos (omitidos)')}</div>
             </div>
             <div className="stat">
               <div className="num" style={{ color: 'var(--brick)' }}>{analysis.invalid}</div>
-              <div className="lbl">Sin nombre</div>
+              <div className="lbl">{t('Sin nombre')}</div>
             </div>
             <div className="stat">
               <div className="num">{rows.length}</div>
-              <div className="lbl">Filas en el archivo</div>
+              <div className="lbl">{t('Filas en el archivo')}</div>
             </div>
           </div>
 
@@ -349,20 +351,20 @@ export default function ImportLeads() {
               onClick={doImport}
             >
               {importing
-                ? 'Importando…'
-                : `Importar ${analysis.newRows.length} contactos nuevos`}
+                ? t('Importando…')
+                : t('Importar {n} contactos nuevos', { n: analysis.newRows.length })}
             </button>
           </div>
 
           <div className="card">
-            <h3 className="card-title">Vista previa (primeras 25 filas)</h3>
+            <h3 className="card-title">{t('Vista previa (primeras 25 filas)')}</h3>
             <div className="table-wrap" style={{ border: 'none', boxShadow: 'none' }}>
               <table className="mini-table">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Teléfono</th>
-                    <th>Estado</th>
+                    <th>{t('Nombre')}</th>
+                    <th>{t('Teléfono')}</th>
+                    <th>{t('Estado')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -370,14 +372,14 @@ export default function ImportLeads() {
                     const b = badge[r.status]
                     return (
                       <tr key={i}>
-                        <td>{r.name || <span className="muted">(vacío)</span>}</td>
+                        <td>{r.name || <span className="muted">{t('(vacío)')}</span>}</td>
                         <td className="muted">{r.phone || '—'}</td>
                         <td>
                           <span
                             className="badge"
                             style={{ background: b.bg, color: b.color }}
                           >
-                            {b.label}
+                            {t(b.label)}
                           </span>
                         </td>
                       </tr>

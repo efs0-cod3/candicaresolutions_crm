@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase, OUTCOMES, STAGES, STAGE_ORDER } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useLang, monthName } from '../i18n'
 import LeadModal from '../components/LeadModal'
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20] // 20 = máximo por página
-const MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-]
 
 function money(v) {
   if (v === null || v === undefined || v === '') return '—'
@@ -22,6 +19,7 @@ function fmtDate(d) {
 
 export default function Leads() {
   const { user, isAdmin } = useAuth()
+  const { t, lang } = useLang()
   const [leads, setLeads] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -175,12 +173,12 @@ export default function Leads() {
   }
 
   async function remove(id) {
-    if (!window.confirm('¿Eliminar este contacto?')) return
+    if (!window.confirm(t('¿Eliminar este contacto?'))) return
     const { error } = await supabase.from('leads').delete().eq('id', id)
     if (error) {
       setError(
         error.message.includes('policy')
-          ? 'Solo un administrador puede eliminar contactos.'
+          ? t('Solo un administrador puede eliminar contactos.')
           : error.message
       )
       return
@@ -211,23 +209,21 @@ export default function Leads() {
   function StatusCell({ l }) {
     if (segment === 'lead') return <StatusSelect l={l} />
     return (
-      <span
-        className="badge"
-        style={{ background: 'var(--slate-soft)', color: 'var(--slate)' }}
-      >
-        📅 {fmtDate(l.enroll_date)}
-      </span>
+      <div className="enroll-cell">
+        <div className="enroll-label">{t('Fecha de afiliación')}</div>
+        <div className="enroll-value">{fmtDate(l.enroll_date)}</div>
+      </div>
     )
   }
 
   function Actions({ l }) {
     return (
       <div className="row-actions">
-        <button className="icon-btn" title="Editar / notas" onClick={() => setModalLead(l)}>
+        <button className="icon-btn" title={t('Editar / notas')} onClick={() => setModalLead(l)}>
           ✎
         </button>
         {isAdmin && (
-          <button className="icon-btn danger" title="Eliminar" onClick={() => remove(l.id)}>
+          <button className="icon-btn danger" title={t('Eliminar')} onClick={() => remove(l.id)}>
             ✕
           </button>
         )}
@@ -244,7 +240,7 @@ export default function Leads() {
         📞 {l.phone}
       </a>
     ) : (
-      <span className="muted">Sin teléfono</span>
+      <span className="muted">{t('Sin teléfono')}</span>
     )
   }
 
@@ -264,19 +260,19 @@ export default function Leads() {
       <div className="stats">
         <div className="stat">
           <div className="num">{stats.total}</div>
-          <div className="lbl">Total {STAGES[segment]}</div>
+          <div className="lbl">{t('Total {stage}', { stage: STAGES[segment] })}</div>
         </div>
         <div className="stat">
           <div className="num">{stats.called}</div>
-          <div className="lbl">Contactados</div>
+          <div className="lbl">{t('Contactados')}</div>
         </div>
         <div className="stat">
           <div className="num">{stats.interested}</div>
-          <div className="lbl">Interesados</div>
+          <div className="lbl">{t('Interesados')}</div>
         </div>
         <div className="stat">
           <div className="num">{stats.rate}%</div>
-          <div className="lbl">Tasa de interés</div>
+          <div className="lbl">{t('Tasa de interés')}</div>
         </div>
       </div>
 
@@ -299,65 +295,63 @@ export default function Leads() {
         <div className="filters">
           <input
             type="text"
-            placeholder="Buscar por nombre…"
+            placeholder={t('Buscar por nombre…')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <select className="chip" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="all">Todos los estados</option>
+            <option value="all">{t('Todos los estados')}</option>
             {Object.entries(OUTCOMES).map(([k, m]) => (
-              <option key={k} value={k}>{m.label}</option>
+              <option key={k} value={k}>{t(m.label)}</option>
             ))}
           </select>
           <select className="chip" value={sepFilter} onChange={(e) => setSepFilter(e.target.value)}>
-            <option value="all">Todos los SEP</option>
+            <option value="all">{t('Todos los SEP')}</option>
             {seps.map((s) => (<option key={s} value={s}>{s}</option>))}
           </select>
           <select className="chip" value={planFilter} onChange={(e) => setPlanFilter(e.target.value)}>
-            <option value="all">Todos los planes</option>
+            <option value="all">{t('Todos los planes')}</option>
             {plans.map((p) => (<option key={p} value={p}>{p}</option>))}
           </select>
           <select className="chip" value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
-            <option value="all">Todos los años</option>
+            <option value="all">{t('Todos los años')}</option>
             {years.map((y) => (<option key={y} value={y}>{y}</option>))}
           </select>
           <select className="chip" value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)}>
-            <option value="all">Todos los meses</option>
+            <option value="all">{t('Todos los meses')}</option>
             {monthOptions.map((mm) => (
-              <option key={mm} value={mm}>{MONTHS[Number(mm) - 1]}</option>
+              <option key={mm} value={mm}>{monthName(Number(mm) - 1, lang)}</option>
             ))}
           </select>
           <select className="chip" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="name_asc">Nombre (A→Z)</option>
-            <option value="name_desc">Nombre (Z→A)</option>
-            <option value="date_desc">Fecha de entrada (reciente)</option>
-            <option value="date_asc">Fecha de entrada (antigua)</option>
+            <option value="name_asc">{t('Nombre (A→Z)')}</option>
+            <option value="name_desc">{t('Nombre (Z→A)')}</option>
+            <option value="date_desc">{t('Fecha de entrada (reciente)')}</option>
+            <option value="date_asc">{t('Fecha de entrada (antigua)')}</option>
           </select>
           <div className="view-toggle">
             <button
               className={view === 'list' ? 'active' : ''}
               onClick={() => changeView('list')}
-              title="Vista lista"
             >
-              ☰ Lista
+              ☰ {t('Lista')}
             </button>
             <button
               className={view === 'cards' ? 'active' : ''}
               onClick={() => changeView('cards')}
-              title="Vista tarjetas"
             >
-              ▦ Tarjetas
+              ▦ {t('Tarjetas')}
             </button>
           </div>
           <button className="add-btn" onClick={() => setModalLead(null)}>
-            + Agregar contacto
+            + {t('Agregar contacto')}
           </button>
         </div>
 
         {loading ? (
           <div className="spinner" />
         ) : filtered.length === 0 ? (
-          <div className="empty">No hay leads que coincidan con el filtro.</div>
+          <div className="empty">{t('No hay leads que coincidan con el filtro.')}</div>
         ) : (
           <>
             {view === 'list' ? (
@@ -384,7 +378,7 @@ export default function Leads() {
                     <Actions l={l} />
                     {segment === 'lead' && l.call_status === 'interested' && l.notes && (
                       <div className="lead-note">
-                        <span className="lead-note-tag">Interesado</span>
+                        <span className="lead-note-tag">{t('Interesado')}</span>
                         {l.notes}
                       </div>
                     )}
@@ -415,7 +409,7 @@ export default function Leads() {
                     <StatusCell l={l} />
                     {segment === 'lead' && l.call_status === 'interested' && l.notes && (
                       <div className="lead-note" style={{ marginTop: 10 }}>
-                        <span className="lead-note-tag">Interesado</span>
+                        <span className="lead-note-tag">{t('Interesado')}</span>
                         {l.notes}
                       </div>
                     )}
@@ -428,10 +422,10 @@ export default function Leads() {
               <div className="pager-left">
                 <span className="pager-info">
                   {(safePage - 1) * pageSize + 1}–
-                  {Math.min(safePage * pageSize, filtered.length)} de {filtered.length}
+                  {Math.min(safePage * pageSize, filtered.length)} {t('de')} {filtered.length}
                 </span>
                 <label className="pager-size">
-                  Ver
+                  {t('Ver')}
                   <select
                     value={pageSize}
                     onChange={(e) => changePageSize(Number(e.target.value))}
@@ -440,7 +434,7 @@ export default function Leads() {
                       <option key={n} value={n}>{n}</option>
                     ))}
                   </select>
-                  por página
+                  {t('por página')}
                 </label>
               </div>
               <div className="pager-controls">
@@ -449,17 +443,17 @@ export default function Leads() {
                   disabled={safePage <= 1}
                   onClick={() => setPage(safePage - 1)}
                 >
-                  ← Anterior
+                  {t('← Anterior')}
                 </button>
                 <span className="pager-page">
-                  Página {safePage} de {pageCount}
+                  {t('Página')} {safePage} {t('de')} {pageCount}
                 </span>
                 <button
                   className="btn-secondary"
                   disabled={safePage >= pageCount}
                   onClick={() => setPage(safePage + 1)}
                 >
-                  Siguiente →
+                  {t('Siguiente →')}
                 </button>
               </div>
             </div>

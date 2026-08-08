@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../i18n'
 
 function fmtDate(d) {
   if (!d) return null
@@ -26,6 +27,7 @@ function dueInfo(due, status) {
 
 export default function Tasks() {
   const { user, isAdmin } = useAuth()
+  const { t } = useLang()
   const [tasks, setTasks] = useState([])
   const [profiles, setProfiles] = useState([])
   const [loading, setLoading] = useState(true)
@@ -79,7 +81,7 @@ export default function Tasks() {
     e.preventDefault()
     setError('')
     if (!title.trim() || !assignee) {
-      setError('Escribe un título y elige a quién asignar.')
+      setError(t('Escribe un título y elige a quién asignar.'))
       return
     }
     setSaving(true)
@@ -125,32 +127,30 @@ export default function Tasks() {
     else setTasks((prev) => prev.filter((t) => t.id !== id))
   }
 
-  function TaskItem({ t }) {
+  function TaskItem({ task }) {
+    const info = dueInfo(task.due_date, task.status)
     return (
-      <div className={`task-item ${t.status === 'done' ? 'is-done' : ''}`}>
+      <div className={`task-item ${task.status === 'done' ? 'is-done' : ''}`}>
         <button
           className="task-check"
-          onClick={() => toggle(t)}
-          title={t.status === 'done' ? 'Marcar pendiente' : 'Marcar hecha'}
+          onClick={() => toggle(task)}
+          title={task.status === 'done' ? t('Marcar pendiente') : t('Marcar hecha')}
         >
-          {t.status === 'done' ? '✓' : ''}
+          {task.status === 'done' ? '✓' : ''}
         </button>
         <div className="task-body">
-          <div className="task-title">{t.title}</div>
-          {t.details && <div className="task-details">{t.details}</div>}
+          <div className="task-title">{task.title}</div>
+          {task.details && <div className="task-details">{task.details}</div>}
           <div className="task-meta">
-            {isAdmin && <span>👤 {nameOf[t.assigned_to] || 'Agente'}</span>}
-            {t.due_date && <span>📅 {fmtDate(t.due_date)}</span>}
-            {(() => {
-              const info = dueInfo(t.due_date, t.status)
-              return info ? (
-                <span className={`bell-tag ${info.cls}`}>{info.label}</span>
-              ) : null
-            })()}
+            {isAdmin && <span>👤 {nameOf[task.assigned_to] || t('Agente')}</span>}
+            {task.due_date && <span>📅 {fmtDate(task.due_date)}</span>}
+            {info && (
+              <span className={`bell-tag ${info.cls}`}>{t(info.label)}</span>
+            )}
           </div>
         </div>
         {isAdmin && (
-          <button className="icon-btn danger" title="Eliminar" onClick={() => remove(t.id)}>
+          <button className="icon-btn danger" title={t('Eliminar')} onClick={() => remove(task.id)}>
             ✕
           </button>
         )}
@@ -160,28 +160,28 @@ export default function Tasks() {
 
   return (
     <div className="content">
-      <h2 className="page-heading">Tareas</h2>
+      <h2 className="page-heading">{t('Tareas')}</h2>
       <p className="page-note">
         {isAdmin
-          ? 'Asigna tareas a tus agentes y sigue su avance.'
-          : 'Tus tareas asignadas. Márcalas como hechas al completarlas.'}
+          ? t('Asigna tareas a tus agentes y sigue su avance.')
+          : t('Tus tareas asignadas. Márcalas como hechas al completarlas.')}
       </p>
 
       {error && <div className="alert alert-error">{error}</div>}
 
       {isAdmin && (
         <div className="card" style={{ marginBottom: 16 }}>
-          <h3 className="card-title">Asignar una tarea</h3>
+          <h3 className="card-title">{t('Asignar una tarea')}</h3>
           <form onSubmit={createTask}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
               <div>
-                <label>Título</label>
-                <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Llamar lista FEMA" />
+                <label>{t('Título')}</label>
+                <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('Llamar lista FEMA')} />
               </div>
               <div>
-                <label>Asignar a</label>
+                <label>{t('Asignar a')}</label>
                 <select value={assignee} onChange={(e) => setAssignee(e.target.value)}>
-                  <option value="">— Elegir —</option>
+                  <option value="">{t('— Elegir —')}</option>
                   {profiles.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.full_name} {p.role === 'admin' ? '(admin)' : ''}
@@ -190,17 +190,17 @@ export default function Tasks() {
                 </select>
               </div>
               <div>
-                <label>Fecha límite (opcional)</label>
+                <label>{t('Fecha límite (opcional)')}</label>
                 <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
               </div>
             </div>
             <div style={{ marginTop: 12 }}>
-              <label>Detalles (opcional)</label>
-              <input value={details} onChange={(e) => setDetails(e.target.value)} placeholder="Notas o instrucciones…" />
+              <label>{t('Detalles (opcional)')}</label>
+              <input value={details} onChange={(e) => setDetails(e.target.value)} placeholder={t('Notas o instrucciones…')} />
             </div>
             <div style={{ marginTop: 12 }}>
               <button className="add-btn" type="submit" disabled={saving}>
-                {saving ? 'Asignando…' : 'Asignar tarea'}
+                {saving ? t('Asignando…') : t('Asignar tarea')}
               </button>
             </div>
           </form>
@@ -212,21 +212,21 @@ export default function Tasks() {
       ) : (
         <>
           <div className="card" style={{ marginBottom: 16 }}>
-            <h3 className="card-title">Pendientes ({pending.length})</h3>
+            <h3 className="card-title">{t('Pendientes ({n})', { n: pending.length })}</h3>
             {pending.length === 0 ? (
-              <p className="muted">No hay tareas pendientes.</p>
+              <p className="muted">{t('No hay tareas pendientes.')}</p>
             ) : (
               <div className="task-list">
-                {pending.map((t) => (<TaskItem key={t.id} t={t} />))}
+                {pending.map((task) => (<TaskItem key={task.id} task={task} />))}
               </div>
             )}
           </div>
 
           {done.length > 0 && (
             <div className="card">
-              <h3 className="card-title">Completadas ({done.length})</h3>
+              <h3 className="card-title">{t('Completadas ({n})', { n: done.length })}</h3>
               <div className="task-list">
-                {done.map((t) => (<TaskItem key={t.id} t={t} />))}
+                {done.map((task) => (<TaskItem key={task.id} task={task} />))}
               </div>
             </div>
           )}
