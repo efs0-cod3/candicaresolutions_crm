@@ -11,6 +11,7 @@ import AmountsDashboard from './pages/AmountsDashboard'
 import ImportLeads from './pages/ImportLeads'
 import UsersAdmin from './pages/UsersAdmin'
 import Tasks from './pages/Tasks'
+import AuditLog from './pages/AuditLog'
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/amounts" element={<AmountsDashboard />} />
             <Route path="/import" element={<ImportLeads />} />
             <Route path="/usuarios" element={<UsersAdmin />} />
+            <Route path="/auditoria" element={<AuditLog />} />
           </Route>
           <Route path="*" element={<Navigate to="/leads" replace />} />
         </Routes>
