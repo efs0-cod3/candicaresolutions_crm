@@ -14,6 +14,23 @@ const EN = {
   Montos: 'Amounts',
   Importar: 'Import',
   Usuarios: 'Users',
+  Auditoría: 'Audit',
+
+  // Audit log
+  'Registro de cambios: quién modificó qué y cuándo. Solo administradores.':
+    'Change log: who changed what and when. Admins only.',
+  'Buscar por persona, contacto o valor…': 'Search by person, contact or value…',
+  'Todos los campos': 'All fields',
+  'Sin registros de auditoría.': 'No audit records.',
+  Quién: 'Who',
+  Registro: 'Record',
+  Campo: 'Field',
+  Antes: 'Before',
+  Después: 'After',
+  Sistema: 'System',
+  'Estado de llamada': 'Call status',
+  'Asignado a': 'Assigned to',
+  Eliminado: 'Deleted',
 
   // Auth / login
   'Inicia sesión para trabajar tus contactos.': 'Sign in to work your contacts.',

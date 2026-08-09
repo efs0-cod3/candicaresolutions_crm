@@ -18,6 +18,7 @@ export default function Layout() {
           { to: '/amounts', label: 'Montos' },
           { to: '/import', label: 'Importar' },
           { to: '/usuarios', label: 'Usuarios' },
+          { to: '/auditoria', label: 'Auditoría' },
         ]
       : []),
   ]
